@@ -21,7 +21,13 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
       )
     }
 
+    // Detect if we're on a project page
+    const isProjectPage = () => {
+      return window.location.pathname.startsWith('/project/')
+    }
+
     const isTouch = isTouchDevice()
+    const onProjectPage = isProjectPage()
 
     if (isTouch) {
       // Mobile: Use hover to reveal/hide overlay
@@ -41,8 +47,8 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
       return () => {
         // Event listeners are automatically cleaned up when component unmounts
       }
-    } else {
-      // Desktop: Use IntersectionObserver for scroll visibility and mouse proximity
+    } else if (onProjectPage) {
+      // Desktop on project page: Use IntersectionObserver for scroll visibility and mouse proximity
       const intersectionOpacity = new Map<HTMLElement, number>()
       const mouseProximityOpacity = new Map<HTMLElement, number>()
 
@@ -111,6 +117,24 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
       return () => {
         observer.disconnect()
         root.removeEventListener('mousemove', handleMouseMove)
+      }
+    } else {
+      // Desktop on homepage: Use hover to reveal/hide overlay
+      for (const panel of panels) {
+        // Default to full overlay (hidden content)
+        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+
+        panel.addEventListener('mouseenter', () => {
+          panel.style.setProperty('--panel-caption-overlay-opacity', '0')
+        })
+
+        panel.addEventListener('mouseleave', () => {
+          panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+        })
+      }
+
+      return () => {
+        // Event listeners are automatically cleaned up when component unmounts
       }
     }
   }, [rootRef])
