@@ -43,9 +43,7 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
           const distance = Math.abs(panelCenter - viewportCenter)
           
           // Calculate opacity based on distance from viewport center
-          // 0px distance (focused tile) = 0 opacity
-          // ~300px distance (adjacent tiles) = 0.5 opacity
-          // >500px distance (far tiles) = 1.0 opacity
+          // Minimum 0.3 (30%), maximum 1.0 (100%)
           let opacity = 0
           if (distance < 100) {
             opacity = (distance / 100) * 0.5
@@ -54,6 +52,9 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
           } else {
             opacity = 1.0
           }
+
+          // Ensure no opacity below 30%
+          opacity = Math.max(opacity, 0.3)
 
           panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
         }
