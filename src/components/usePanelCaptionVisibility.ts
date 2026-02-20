@@ -12,49 +12,30 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
       return
     }
 
-    const updateOverlayOpacity = () => {
-      const viewportHeight = window.innerHeight
-      const viewportCenter = viewportHeight / 2
-
-      for (const panel of panels) {
-        const rect = panel.getBoundingClientRect()
-        const panelCenter = rect.top + rect.height / 2
-        const distance = Math.abs(panelCenter - viewportCenter)
-        
-        // Calculate opacity based on distance from viewport center
-        // 0px distance (focused tile) = 0 opacity
-        // ~300px distance (adjacent tiles) = 0.5 opacity (50% of max)
-        // >500px distance (far tiles) = 1.0 opacity (full overlay)
-        let opacity = 0
-        if (distance < 100) {
-          // Very close to center: smooth transition from 0 to 0.5
-          opacity = (distance / 100) * 0.5
-        } else if (distance < 400) {
-          // Medium distance: transition from 0.5 to 1.0
-          opacity = 0.5 + ((distance - 100) / 300) * 0.5
-        } else {
-          // Far away: full opacity
-          opacity = 1.0
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const panel = entry.target as HTMLElement
+          
+          // If visible >= 50% on screen, no overlay (opacity 0)
+          // If visible < 50% on screen, full overlay (opacity 1)
+          const opacity = entry.intersectionRatio >= 0.5 ? 0 : 1
+          panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
         }
+      },
+      {
+        threshold: [0, 0.25, 0.5, 0.75, 1],
+      },
+    )
 
-        panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
-      }
+    for (const panel of panels) {
+      // Default to full overlay until intersection data available
+      panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+      observer.observe(panel)
     }
-
-    // Update on scroll
-    const scrollHandler = () => {
-      updateOverlayOpacity()
-    }
-
-    // Initial update
-    updateOverlayOpacity()
-
-    root.addEventListener('scroll', scrollHandler, { passive: true })
-    window.addEventListener('resize', scrollHandler, { passive: true })
 
     return () => {
-      root.removeEventListener('scroll', scrollHandler)
-      window.removeEventListener('resize', scrollHandler)
+      observer.disconnect()
     }
   }, [rootRef])
 }
