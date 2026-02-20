@@ -2306,7 +2306,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_2",
+        "title": "archive_5",
         "location": null,
         "captureDate": "2026-02-20T14:56:30.547Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2556.jpg",
@@ -2314,7 +2314,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_3",
+        "title": "archive_2",
         "location": null,
         "captureDate": "2026-02-20T14:56:24.978Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2554.jpg",
@@ -2330,7 +2330,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_4",
+        "title": "archive_3",
         "location": null,
         "captureDate": "2026-02-20T14:56:23.835Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2552.jpg",
@@ -2338,7 +2338,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_5",
+        "title": "archive_4",
         "location": null,
         "captureDate": "2026-02-20T14:56:23.235Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2551.jpg",
@@ -2346,7 +2346,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_8",
+        "title": "archive_7",
         "location": null,
         "captureDate": "2026-02-20T14:56:22.660Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2550.jpg",
@@ -2354,7 +2354,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_7",
+        "title": "archive_9",
         "location": null,
         "captureDate": "2026-02-20T14:56:22.073Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2549.jpg",
@@ -2362,7 +2362,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_9",
+        "title": "archive_12",
         "location": null,
         "captureDate": "2026-02-20T14:56:21.486Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2548.jpg",
@@ -2378,7 +2378,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_11",
+        "title": "archive_8",
         "location": null,
         "captureDate": "2026-02-20T14:56:20.473Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2546.jpg",
@@ -2386,7 +2386,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_12",
+        "title": "archive_11",
         "location": null,
         "captureDate": "2026-02-20T14:56:19.759Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2545.jpg",
@@ -2394,7 +2394,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_14",
+        "title": "archive_13",
         "location": null,
         "captureDate": "2026-02-20T14:56:19.315Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2544.jpg",
@@ -2402,7 +2402,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_13",
+        "title": "archive_16",
         "location": null,
         "captureDate": "2026-02-20T14:56:18.795Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2543.jpg",
@@ -2410,7 +2410,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_17",
+        "title": "archive_14",
         "location": null,
         "captureDate": "2026-02-20T14:56:18.219Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2542.jpg",
@@ -2418,7 +2418,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_16",
+        "title": "archive_15",
         "location": null,
         "captureDate": "2026-02-20T14:56:17.657Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2541.jpg",
@@ -2426,7 +2426,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_15",
+        "title": "archive_17",
         "location": null,
         "captureDate": "2026-02-20T14:56:17.116Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2540.jpg",
@@ -2434,7 +2434,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_20",
+        "title": "archive_18",
         "location": null,
         "captureDate": "2026-02-20T14:56:16.494Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2537.jpg",
@@ -2442,7 +2442,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_18",
+        "title": "archive_19",
         "location": null,
         "captureDate": "2026-02-20T14:56:15.783Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2536.jpg",
@@ -2450,7 +2450,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_19",
+        "title": "archive_20",
         "location": null,
         "captureDate": "2026-02-20T14:56:15.053Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2535.jpg",
@@ -2466,7 +2466,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_22",
+        "title": "archive_23",
         "location": null,
         "captureDate": "2026-02-20T14:56:13.446Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2533.jpg",
@@ -2474,7 +2474,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_23",
+        "title": "archive_28",
         "location": null,
         "captureDate": "2026-02-20T14:56:12.719Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2532.jpg",
@@ -2482,7 +2482,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_24",
+        "title": "archive_22",
         "location": null,
         "captureDate": "2026-02-20T14:56:12.043Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2531.jpg",
@@ -2498,7 +2498,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_33",
+        "title": "archive_24",
         "location": null,
         "captureDate": "2026-02-20T14:56:10.872Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2529.jpg",
@@ -2522,7 +2522,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_28",
+        "title": "archive_34",
         "location": null,
         "captureDate": "2026-02-20T14:56:09.327Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2526.jpg",
@@ -2554,7 +2554,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_32",
+        "title": "archive_33",
         "location": null,
         "captureDate": "2026-02-20T14:56:06.786Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2522.jpg",
@@ -2562,7 +2562,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_34",
+        "title": "archive_32",
         "location": null,
         "captureDate": "2026-02-20T14:56:06.283Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2521.jpg",
@@ -2594,7 +2594,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_38",
+        "title": "archive_40",
         "location": null,
         "captureDate": "2026-02-20T14:56:04.140Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2517.jpg",
@@ -2618,7 +2618,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_40",
+        "title": "archive_38",
         "location": null,
         "captureDate": "2026-02-20T14:56:02.638Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2514.jpg",
@@ -2626,7 +2626,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_42",
+        "title": "archive_48",
         "location": null,
         "captureDate": "2026-02-20T14:56:02.170Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2513.jpg",
@@ -2634,7 +2634,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_43",
+        "title": "archive_42",
         "location": null,
         "captureDate": "2026-02-20T14:55:53.470Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2511.jpg",
@@ -2642,7 +2642,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_46",
+        "title": "archive_49",
         "location": null,
         "captureDate": "2026-02-20T14:55:52.930Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2510.jpg",
@@ -2658,7 +2658,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_45",
+        "title": "archive_43",
         "location": null,
         "captureDate": "2026-02-20T14:55:51.791Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2508.jpg",
@@ -2666,7 +2666,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_47",
+        "title": "archive_46",
         "location": null,
         "captureDate": "2026-02-20T14:55:51.316Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2507.jpg",
@@ -2674,7 +2674,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_48",
+        "title": "archive_45",
         "location": null,
         "captureDate": "2026-02-20T14:55:50.845Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2506.jpg",
@@ -2682,7 +2682,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_52",
+        "title": "archive_47",
         "location": null,
         "captureDate": "2026-02-20T14:55:50.245Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2505.jpg",
@@ -2690,7 +2690,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_50",
+        "title": "archive_51",
         "location": null,
         "captureDate": "2026-02-20T14:55:49.765Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2504.jpg",
@@ -2698,7 +2698,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_60",
+        "title": "archive_55",
         "location": null,
         "captureDate": "2026-02-20T14:55:49.297Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2503.jpg",
@@ -2706,7 +2706,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_49",
+        "title": "archive_50",
         "location": null,
         "captureDate": "2026-02-20T14:55:48.834Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2502.jpg",
@@ -2714,7 +2714,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_58",
+        "title": "archive_52",
         "location": null,
         "captureDate": "2026-02-20T14:55:48.353Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2501.jpg",
@@ -2730,7 +2730,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_51",
+        "title": "archive_56",
         "location": null,
         "captureDate": "2026-02-20T14:55:47.435Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2499.jpg",
@@ -2738,7 +2738,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_55",
+        "title": "archive_54",
         "location": null,
         "captureDate": "2026-02-20T14:55:46.947Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2498.jpg",
@@ -2746,7 +2746,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_54",
+        "title": "archive_57",
         "location": null,
         "captureDate": "2026-02-20T14:55:46.417Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2497.jpg",
@@ -2754,7 +2754,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_59",
+        "title": "archive_58",
         "location": null,
         "captureDate": "2026-02-20T14:55:45.601Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2496.jpg",
@@ -2762,7 +2762,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_63",
+        "title": "archive_60",
         "location": null,
         "captureDate": "2026-02-20T14:55:45.040Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2495.jpg",
@@ -2770,7 +2770,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_56",
+        "title": "archive_59",
         "location": null,
         "captureDate": "2026-02-20T14:55:44.420Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2494.jpg",
@@ -2778,7 +2778,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_57",
+        "title": "archive_64",
         "location": null,
         "captureDate": "2026-02-20T14:55:43.923Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2493.jpg",
@@ -2794,7 +2794,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_64",
+        "title": "archive_65",
         "location": null,
         "captureDate": "2026-02-20T14:55:42.835Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2491.jpg",
@@ -2810,7 +2810,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_65",
+        "title": "archive_66",
         "location": null,
         "captureDate": "2026-02-20T14:55:39.280Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2488.jpg",
@@ -2818,7 +2818,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_71",
+        "title": "archive_63",
         "location": null,
         "captureDate": "2026-02-20T14:55:38.803Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2487.jpg",
@@ -2826,7 +2826,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_67",
+        "title": "archive_73",
         "location": null,
         "captureDate": "2026-02-20T14:55:38.346Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2486.jpg",
@@ -2834,7 +2834,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_66",
+        "title": "archive_67",
         "location": null,
         "captureDate": "2026-02-20T14:55:37.740Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2485.jpg",
@@ -2842,7 +2842,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_81",
+        "title": "archive_70",
         "location": null,
         "captureDate": "2026-02-20T14:55:37.035Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2484.jpg",
@@ -2858,7 +2858,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_80",
+        "title": "archive_69",
         "location": null,
         "captureDate": "2026-02-20T14:55:34.079Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2481.jpg",
@@ -2866,7 +2866,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_69",
+        "title": "archive_76",
         "location": null,
         "captureDate": "2026-02-20T14:55:33.581Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2480.jpg",
@@ -2874,7 +2874,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_73",
+        "title": "archive_74",
         "location": null,
         "captureDate": "2026-02-20T14:55:32.951Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2479.jpg",
@@ -2882,7 +2882,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_70",
+        "title": "archive_71",
         "location": null,
         "captureDate": "2026-02-20T14:55:32.444Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2478.jpg",
@@ -2890,7 +2890,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_75",
+        "title": "archive_72",
         "location": null,
         "captureDate": "2026-02-20T14:55:31.938Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2477.jpg",
@@ -2898,7 +2898,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_77",
+        "title": "archive_75",
         "location": null,
         "captureDate": "2026-02-20T14:55:31.413Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2476.jpg",
@@ -2906,7 +2906,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_72",
+        "title": "archive_81",
         "location": null,
         "captureDate": "2026-02-20T14:55:30.876Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2475.jpg",
@@ -2914,7 +2914,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_78",
+        "title": "archive_77",
         "location": null,
         "captureDate": "2026-02-20T14:55:30.341Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2474.jpg",
@@ -2922,7 +2922,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_76",
+        "title": "archive_78",
         "location": null,
         "captureDate": "2026-02-20T14:55:29.628Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2230.jpg",
@@ -2930,7 +2930,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_74",
+        "title": "archive_79",
         "location": null,
         "captureDate": "2026-02-20T14:55:28.788Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2183.jpg",
@@ -2938,7 +2938,7 @@ export const generatedProjects = [
         "monochrome": false
       },
       {
-        "title": "archive_79",
+        "title": "archive_80",
         "location": null,
         "captureDate": "2026-02-20T14:55:28.315Z",
         "src": "/media/projects/SarahBonnici_Perfume/.generated/IMG_2177.jpg",

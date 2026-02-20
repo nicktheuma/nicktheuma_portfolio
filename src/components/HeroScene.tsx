@@ -2,7 +2,6 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Mesh } from 'three'
-import { emissive } from 'three/tsl'
 
 function RotatingForm() {
   const meshRef = useRef<Mesh>(null)
