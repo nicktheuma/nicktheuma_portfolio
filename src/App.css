@@ -695,10 +695,10 @@
   background: var(--panel-background);
   opacity: var(--panel-caption-overlay-opacity, 1);
   mix-blend-mode: var(--overlay-blend-mode);
-  backdrop-filter: var(--overlay-effect-filter);
+  backdrop-filter: blur(calc(8px * var(--panel-caption-overlay-opacity, 1)));
   pointer-events: none;
   z-index: 0;
-  transition: opacity 300ms ease;
+  transition: opacity 300ms ease, backdrop-filter 300ms ease;
 }
 
 [data-caption-panel="true"] .media-card-body.panel-caption > * {
