@@ -18,7 +18,8 @@ function resolveMediaUrl(value: string) {
     return value
   }
 
-  return `${mediaBaseUrl}${value}`
+  const strippedPath = value.replace(/^\/media/, '')
+  return `${mediaBaseUrl}${strippedPath.startsWith('/') ? strippedPath : `/${strippedPath}`}`
 }
 
 type ImageItem = {

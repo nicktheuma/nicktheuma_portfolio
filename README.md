@@ -96,7 +96,8 @@ Copy `.env.example` to `.env.local` (and optionally `.env.production`) and fill 
 
 Important runtime value:
 
-- `VITE_MEDIA_BASE_URL` should be the public media origin, for example `https://media.yourdomain.com`
+- `VITE_MEDIA_BASE_URL` should be the public media origin and include your bucket prefix (matches `R2_BUCKET_PREFIX`).
+  Example: `https://pub-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.r2.dev/media`
 
 When set, all generated `/media/...` URLs are automatically rewritten to that origin at runtime.
 
@@ -108,6 +109,25 @@ Install dependencies, then sync your local `public/media` folder:
 npm install
 npm run sync:r2
 ```
+
+PowerShell (Windows) with progress and retry support:
+
+```powershell
+$env:R2_CONTINUE_ON_ERROR='true'
+$env:R2_PROGRESS_EVERY='1'
+npm run sync:r2:ps
+```
+
+If any files fail, rerun only those failed uploads:
+
+```powershell
+$env:R2_RETRY_FAILED='true'
+$env:R2_CONTINUE_ON_ERROR='true'
+$env:R2_PROGRESS_EVERY='1'
+npm run sync:r2:ps
+```
+
+Failed files are saved to `.r2-failed.json` at the repo root (override with `R2_FAILED_LIST`).
 
 Your current folder structure is uploaded as-is, recursively, from `public/media`.
 No manual restructuring is required. Example mappings:
