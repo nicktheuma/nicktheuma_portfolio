@@ -2,6 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  VITE_MEDIA_BASE_URL = "https://pub-d95452926a484fe2b637f09b3c3e9288.r2.dev"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
