@@ -77,6 +77,47 @@ function mergeProject(baseProject: Project, override: ProjectOverride | undefine
   }
 }
 
+async function loadAdminOverridesFromAPI(): Promise<SiteOverrides> {
+  try {
+    console.log('[Admin API] Loading overrides from API...')
+    const response = await fetch('/.netlify/functions/admin-overrides-get', { method: 'GET' })
+    console.log('[Admin API] GET response status:', response.status)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.warn('[Admin API] Failed to load overrides:', response.status, errorData)
+      return {}
+    }
+
+    const data = await response.json()
+    console.log('[Admin API] Loaded overrides:', data)
+    return data && typeof data === 'object' ? data : {}
+  } catch (error) {
+    console.warn('[Admin API] Error loading overrides:', error)
+    return {}
+  }
+}
+
+async function saveAdminOverridesToAPI(overrides: SiteOverrides): Promise<void> {
+  try {
+    console.log('[Admin API] Saving overrides to API...', overrides)
+    const response = await fetch('/.netlify/functions/admin-overrides-set', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(overrides),
+    })
+    console.log('[Admin API] POST response status:', response.status)
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.warn('[Admin API] Failed to save overrides:', response.status, errorData)
+    } else {
+      const result = await response.json()
+      console.log('[Admin API] Save successful:', result)
+    }
+  } catch (error) {
+    console.warn('[Admin API] Error saving overrides:', error)
+  }
+}
+
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     if (typeof window === 'undefined') {
@@ -94,6 +135,24 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     return parseStoredOverrides(window.localStorage.getItem(overridesStorageKey))
   })
 
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load overrides from API on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      setIsInitialized(true)
+      return
+    }
+
+    loadAdminOverridesFromAPI().then((apiOverrides) => {
+      if (Object.keys(apiOverrides).length > 0) {
+        setOverrides(apiOverrides)
+      }
+      setIsInitialized(true)
+    })
+  }, [])
+
+  // Save overrides to localStorage (as backup)
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -101,6 +160,19 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
 
     window.localStorage.setItem(overridesStorageKey, JSON.stringify(overrides))
   }, [overrides])
+
+  // Sync overrides to API whenever they change (debounced)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isInitialized) {
+      return
+    }
+
+    const timer = setTimeout(() => {
+      saveAdminOverridesToAPI(overrides)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [overrides, isInitialized])
 
   useEffect(() => {
     if (typeof window === 'undefined') {

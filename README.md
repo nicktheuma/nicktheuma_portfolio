@@ -101,6 +101,15 @@ Important runtime value:
 
 When set, all generated `/media/...` URLs are automatically rewritten to that origin at runtime.
 
+Manifest source value:
+
+- `R2_MANIFEST_SOURCE` controls where `npm run generate:media` reads project files from.
+  - `auto` (default): use R2 when R2 credentials are present, otherwise local `public/media/projects`
+  - `r2`: always use R2 (fails if credentials are missing)
+  - `local`: always use local `public/media/projects`
+
+For deploys where media is not in git, set `R2_MANIFEST_SOURCE=r2` in your build environment so project data is generated from uploaded R2 objects.
+
 ### 4) Upload media to R2
 
 Install dependencies, then sync your local `public/media` folder:
@@ -168,6 +177,7 @@ Secrets:
 Variables:
 
 - `VITE_MEDIA_BASE_URL` (example: `https://media.yourdomain.com`)
+- `R2_MANIFEST_SOURCE` (set to `r2` to generate project data from uploaded R2 media during CI builds)
 - `R2_BUCKET_PREFIX` (optional, default `media`)
 - `R2_DELETE_MISSING` (optional, `true`/`false`)
 

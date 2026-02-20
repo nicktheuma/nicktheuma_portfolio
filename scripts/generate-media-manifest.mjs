@@ -3,10 +3,41 @@ import path from 'node:path'
 import { exiftool } from 'exiftool-vendored'
 import sharp from 'sharp'
 import heicConvert from 'heic-convert'
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
 
 const projectRoot = process.cwd()
 const mediaProjectsRoot = path.join(projectRoot, 'public', 'media', 'projects')
 const outputFile = path.join(projectRoot, 'src', 'content', 'generated-projects.ts')
+
+function loadEnvFile(filePath) {
+  if (!existsSync(filePath)) {
+    return
+  }
+
+  const lines = readFileSync(filePath, 'utf8').split(/\r?\n/)
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue
+    }
+
+    const equalsIndex = trimmed.indexOf('=')
+    if (equalsIndex < 1) {
+      continue
+    }
+
+    const key = trimmed.slice(0, equalsIndex).trim()
+    const value = trimmed.slice(equalsIndex + 1).trim()
+    if (!key || process.env[key] !== undefined) {
+      continue
+    }
+
+    process.env[key] = value
+  }
+}
+
+loadEnvFile(path.join(projectRoot, '.env'))
+loadEnvFile(path.join(projectRoot, '.env.local'))
 
 const imageExtensions = new Set(['.jpg', '.jpeg', '.png', '.webp', '.avif', '.gif', '.heic', '.heif'])
 const videoExtensions = new Set(['.mp4', '.webm', '.mov', '.m4v'])
@@ -16,6 +47,376 @@ const heicExtensions = new Set(['.heic', '.heif'])
 const skippedFolderNames = new Set(['archive', '.generated'])
 const finalPriorityFolderNames = new Set(['final'])
 const processPriorityFolderNames = new Set(['process', 'working'])
+
+const manifestSource = (process.env.R2_MANIFEST_SOURCE ?? 'auto').trim().toLowerCase()
+let activeManifestSource = 'local'
+const requiredR2EnvVars = ['R2_ACCOUNT_ID', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME']
+const missingR2EnvVars = requiredR2EnvVars.filter((name) => typeof process.env[name] !== 'string' || process.env[name].trim().length === 0)
+const hasR2Credentials = missingR2EnvVars.length === 0
+const r2BucketPrefix = (process.env.R2_BUCKET_PREFIX ?? 'media').trim().replace(/^\/+|\/+$/g, '')
+
+function enforceR2Preflight() {
+  if (manifestSource !== 'r2') {
+    return
+  }
+
+  if (missingR2EnvVars.length > 0) {
+    throw new Error(`R2_MANIFEST_SOURCE is set to "r2" but required env vars are missing: ${missingR2EnvVars.join(', ')}`)
+  }
+}
+
+function buildR2ProjectsPrefix() {
+  return [r2BucketPrefix, 'projects'].filter(Boolean).join('/') + '/'
+}
+
+function shouldUseR2Source() {
+  if (manifestSource === 'r2') {
+    return true
+  }
+
+  if (manifestSource === 'local') {
+    return false
+  }
+
+  return hasR2Credentials
+}
+
+function createR2Client() {
+  const accountId = process.env.R2_ACCOUNT_ID?.trim()
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID?.trim()
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim()
+
+  if (!accountId || !accessKeyId || !secretAccessKey) {
+    throw new Error('R2 credentials are not configured. Set R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, and R2_SECRET_ACCESS_KEY.')
+  }
+
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  })
+}
+
+function normalizeMediaPath(value) {
+  if (!value) {
+    return ''
+  }
+
+  return toPosixPath(value).replace(/^\/+/, '')
+}
+
+function mediaPathFromObjectKey(objectKey) {
+  const normalizedKey = normalizeMediaPath(objectKey)
+
+  if (!normalizedKey) {
+    return ''
+  }
+
+  if (r2BucketPrefix && normalizedKey.startsWith(`${r2BucketPrefix}/`)) {
+    return `/media/${normalizedKey.slice(r2BucketPrefix.length + 1)}`
+  }
+
+  return `/media/${normalizedKey}`
+}
+
+function objectKeyFromMediaPath(mediaPath) {
+  const normalizedPath = normalizeMediaPath(mediaPath).replace(/^media\//, '')
+  if (!normalizedPath) {
+    return ''
+  }
+
+  return r2BucketPrefix ? `${r2BucketPrefix}/${normalizedPath}` : normalizedPath
+}
+
+function fileNameWithoutExtensionPosix(filePath) {
+  return path.posix.basename(filePath, path.posix.extname(filePath))
+}
+
+function folderPriorityForObjectKey(objectKey, projectSlug) {
+  const projectPrefix = `${buildR2ProjectsPrefix()}${projectSlug}/`
+  const normalizedKey = normalizeMediaPath(objectKey)
+
+  if (!normalizedKey.startsWith(projectPrefix)) {
+    return 2
+  }
+
+  const relativePath = normalizedKey.slice(projectPrefix.length)
+  const dirSegments = path.posix
+    .dirname(relativePath)
+    .split('/')
+    .map((segment) => segment.toLowerCase())
+    .filter(Boolean)
+
+  if (dirSegments.some((segment) => finalPriorityFolderNames.has(segment))) {
+    return 0
+  }
+
+  if (dirSegments.some((segment) => processPriorityFolderNames.has(segment))) {
+    return 1
+  }
+
+  return 2
+}
+
+function compareRemoteObjectKeys(leftKey, rightKey, projectSlug) {
+  const leftPriority = folderPriorityForObjectKey(leftKey, projectSlug)
+  const rightPriority = folderPriorityForObjectKey(rightKey, projectSlug)
+
+  if (leftPriority !== rightPriority) {
+    return leftPriority - rightPriority
+  }
+
+  return normalizeMediaPath(leftKey).localeCompare(normalizeMediaPath(rightKey))
+}
+
+function shouldSkipRemotePathForManifest(relativePath) {
+  return relativePath
+    .split('/')
+    .map((segment) => segment.toLowerCase())
+    .some((segment) => skippedFolderNames.has(segment))
+}
+
+function shouldApplyMonochromeForObject(objectKey, projectSlug) {
+  return folderPriorityForObjectKey(objectKey, projectSlug) === 1
+}
+
+async function listAllR2Objects(s3, bucket, prefix) {
+  const objects = []
+  let continuationToken = undefined
+
+  do {
+    const response = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken: continuationToken,
+      }),
+    )
+
+    objects.push(...(response.Contents ?? []))
+    continuationToken = response.IsTruncated ? response.NextContinuationToken : undefined
+  } while (continuationToken)
+
+  return objects
+}
+
+async function readR2Json(s3, bucket, key) {
+  try {
+    const response = await s3.send(
+      new GetObjectCommand({
+        Bucket: bucket,
+        Key: key,
+      }),
+    )
+
+    const body = await response.Body?.transformToString?.()
+    if (!body) {
+      return {}
+    }
+
+    const parsed = JSON.parse(body)
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+
+async function buildProjectsFromR2() {
+  const bucket = process.env.R2_BUCKET_NAME?.trim()
+  if (!bucket) {
+    throw new Error('R2_BUCKET_NAME is required for R2 manifest generation.')
+  }
+
+  const s3 = createR2Client()
+  const projectsPrefix = buildR2ProjectsPrefix()
+  const objects = await listAllR2Objects(s3, bucket, projectsPrefix)
+
+  if (objects.length === 0) {
+    if (existsSync(outputFile)) {
+      console.warn(`Skipping R2 media manifest generation: no objects found for r2://${bucket}/${projectsPrefix}. Keeping existing ${toPosixPath(path.relative(projectRoot, outputFile))}.`)
+      return null
+    }
+  }
+
+  const projectSlugs = new Set()
+  const imageKeysBySlug = new Map()
+  const videoKeysBySlug = new Map()
+  const modelKeysBySlug = new Map()
+  const lastModifiedByKey = new Map()
+
+  for (const object of objects) {
+    const objectKey = object.Key ? normalizeMediaPath(object.Key) : ''
+    if (!objectKey || objectKey.endsWith('/')) {
+      continue
+    }
+
+    if (!objectKey.startsWith(projectsPrefix)) {
+      continue
+    }
+
+    if (object.LastModified) {
+      lastModifiedByKey.set(objectKey, new Date(object.LastModified))
+    }
+
+    const relativeToProjects = objectKey.slice(projectsPrefix.length)
+    const [slug, ...rest] = relativeToProjects.split('/')
+    if (!slug || rest.length === 0) {
+      continue
+    }
+
+    const relativePath = rest.join('/')
+    if (relativePath === 'project.json' || shouldSkipRemotePathForManifest(relativePath)) {
+      projectSlugs.add(slug)
+      continue
+    }
+
+    const extension = path.posix.extname(relativePath).toLowerCase()
+    projectSlugs.add(slug)
+
+    if (imageExtensions.has(extension)) {
+      imageKeysBySlug.set(slug, [...(imageKeysBySlug.get(slug) ?? []), objectKey])
+      continue
+    }
+
+    if (videoExtensions.has(extension)) {
+      videoKeysBySlug.set(slug, [...(videoKeysBySlug.get(slug) ?? []), objectKey])
+      continue
+    }
+
+    if (modelExtensions.has(extension)) {
+      modelKeysBySlug.set(slug, [...(modelKeysBySlug.get(slug) ?? []), objectKey])
+    }
+  }
+
+  const sortedSlugs = [...projectSlugs].sort((left, right) => left.localeCompare(right))
+  const projects = await Promise.all(
+    sortedSlugs.map(async (slug) => {
+      const metaKey = `${projectsPrefix}${slug}/project.json`
+      const meta = await readR2Json(s3, bucket, metaKey)
+      const counters = {}
+
+      const imageKeys = [...(imageKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
+      const videoKeys = [...(videoKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
+      const modelKeys = [...(modelKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
+
+      const images = imageKeys.map((objectKey, index) => {
+        const rawFilename = fileNameWithoutExtensionPosix(objectKey)
+        const autoType = isAutoGeneratedFilename(rawFilename, 'image')
+
+        let title
+        if (autoType === 'recording') {
+          counters.recording = (counters.recording || 0) + 1
+          title = `rec_${counters.recording}`
+        } else if (autoType === 'whatsapp') {
+          counters.whatsapp = (counters.whatsapp || 0) + 1
+          title = `chat_${counters.whatsapp}`
+        } else if (autoType === 'archive') {
+          counters.archive = (counters.archive || 0) + 1
+          title = `archive_${counters.archive}`
+        } else {
+          title = rawFilename || `image_${index + 1}`
+        }
+
+        return {
+          title,
+          location: null,
+          captureDate: lastModifiedByKey.get(objectKey) ?? null,
+          src: mediaPathFromObjectKey(objectKey),
+          monochrome: shouldApplyMonochromeForObject(objectKey, slug),
+        }
+      })
+
+      const videos = videoKeys.map((objectKey, index) => {
+        const rawFilename = fileNameWithoutExtensionPosix(objectKey)
+        const autoType = isAutoGeneratedFilename(rawFilename, 'video')
+
+        let title
+        if (autoType === 'recording') {
+          counters.recording = (counters.recording || 0) + 1
+          title = `rec_${counters.recording}`
+        } else if (autoType === 'whatsapp') {
+          counters.whatsapp = (counters.whatsapp || 0) + 1
+          title = `chat_${counters.whatsapp}`
+        } else if (autoType === 'archive') {
+          counters.archive = (counters.archive || 0) + 1
+          title = `archive_${counters.archive}`
+        } else if (autoType === 'video') {
+          counters.video = (counters.video || 0) + 1
+          title = `video_${counters.video}`
+        } else {
+          title = rawFilename || `video_${index + 1}`
+        }
+
+        return {
+          title,
+          location: null,
+          captureDate: lastModifiedByKey.get(objectKey) ?? null,
+          src: mediaPathFromObjectKey(objectKey),
+          monochrome: shouldApplyMonochromeForObject(objectKey, slug),
+        }
+      })
+
+      const models = modelKeys.map((objectKey, index) => {
+        const rawFilename = fileNameWithoutExtensionPosix(objectKey)
+        const autoType = isAutoGeneratedFilename(rawFilename, 'model')
+
+        let title
+        if (autoType === 'recording') {
+          counters.recording = (counters.recording || 0) + 1
+          title = `rec_${counters.recording}`
+        } else if (autoType === 'whatsapp') {
+          counters.whatsapp = (counters.whatsapp || 0) + 1
+          title = `chat_${counters.whatsapp}`
+        } else if (autoType === 'archive') {
+          counters.archive = (counters.archive || 0) + 1
+          title = `archive_${counters.archive}`
+        } else if (autoType === 'model') {
+          counters.model = (counters.model || 0) + 1
+          title = `model_${counters.model}`
+        } else {
+          title = rawFilename || `model_${index + 1}`
+        }
+
+        return {
+          title,
+          location: null,
+          previewSrc: images[index]?.src ?? images[0]?.src ?? '',
+          fileSrc: mediaPathFromObjectKey(objectKey),
+          monochrome: shouldApplyMonochromeForObject(objectKey, slug),
+        }
+      })
+
+      const thumbnailSrc =
+        typeof meta.thumbnailSrc === 'string' && meta.thumbnailSrc.length > 0
+          ? meta.thumbnailSrc
+          : images[0]?.src ?? videos[0]?.src ?? ''
+
+      const thumbnailObjectKey = objectKeyFromMediaPath(thumbnailSrc)
+
+      return {
+        slug,
+        title: typeof meta.title === 'string' && meta.title.length > 0 ? meta.title : slugToTitle(slug),
+        categoryId: typeof meta.categoryId === 'string' ? meta.categoryId : 'renders',
+        tagIds: Array.isArray(meta.tagIds) ? meta.tagIds.filter((value) => typeof value === 'string') : [],
+        summary: typeof meta.summary === 'string' ? meta.summary : '',
+        thumbnailSrc,
+        thumbnailMonochrome:
+          typeof meta.thumbnailMonochrome === 'boolean'
+            ? meta.thumbnailMonochrome
+            : shouldApplyMonochromeForObject(thumbnailObjectKey, slug),
+        body: Array.isArray(meta.body) ? meta.body.filter((value) => typeof value === 'string') : [],
+        images,
+        videos,
+        models,
+      }
+    }),
+  )
+
+  return projects.filter((project) => project.thumbnailSrc || project.images.length || project.videos.length || project.models.length)
+}
 
 function toPosixPath(value) {
   return value.replaceAll(path.sep, '/')
@@ -418,7 +819,28 @@ async function collectProjectMedia(projectFolderPath) {
 }
 
 async function buildProjects() {
+  if (shouldUseR2Source()) {
+    if (!hasR2Credentials) {
+      if (manifestSource === 'r2') {
+        throw new Error(`R2_MANIFEST_SOURCE is set to "r2" but credentials are missing. Required env vars: ${requiredR2EnvVars.join(', ')}`)
+      }
+    } else {
+      activeManifestSource = 'r2'
+      console.log('Generating project manifest from R2 uploads...')
+      return buildProjectsFromR2()
+    }
+  }
+
+  activeManifestSource = 'local'
+  console.log('Generating project manifest from local public/media/projects...')
   if (!existsSync(mediaProjectsRoot)) {
+    if (existsSync(outputFile)) {
+      console.warn(
+        `Skipping media manifest generation: ${toPosixPath(path.relative(projectRoot, mediaProjectsRoot))} is missing. Keeping existing ${toPosixPath(path.relative(projectRoot, outputFile))}.`,
+      )
+      return null
+    }
+
     mkdirSync(mediaProjectsRoot, { recursive: true })
   }
 
@@ -426,6 +848,13 @@ async function buildProjects() {
     .map((name) => path.join(mediaProjectsRoot, name))
     .filter((folderPath) => statSync(folderPath).isDirectory())
     .map((folderPath) => path.basename(folderPath))
+
+  if (folderNames.length === 0 && existsSync(outputFile)) {
+    console.warn(
+      `Skipping media manifest generation: no project folders found in ${toPosixPath(path.relative(projectRoot, mediaProjectsRoot))}. Keeping existing ${toPosixPath(path.relative(projectRoot, outputFile))}.`,
+    )
+    return null
+  }
 
   const projects = await Promise.all(
     folderNames.map(async (slug) => {
@@ -473,9 +902,15 @@ function writeOutput(projects) {
 
 async function main() {
   try {
+    enforceR2Preflight()
     const projects = await buildProjects()
+    if (projects === null) {
+      return
+    }
+
     writeOutput(projects)
-    console.log(`Generated ${projects.length} project(s) from public/media/projects`)
+    const sourceLabel = activeManifestSource === 'r2' ? 'R2 uploads' : 'local public/media/projects'
+    console.log(`Generated ${projects.length} project(s) from ${sourceLabel}`)
   } finally {
     await exiftool.end()
   }
