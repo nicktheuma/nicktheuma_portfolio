@@ -450,7 +450,7 @@ async function buildProjects() {
       return {
         slug,
         title: typeof meta.title === 'string' && meta.title.length > 0 ? meta.title : slugToTitle(slug),
-        categoryId: typeof meta.categoryId === 'string' ? meta.categoryId : 'rendering',
+        categoryId: typeof meta.categoryId === 'string' ? meta.categoryId : 'renders',
         tagIds: Array.isArray(meta.tagIds) ? meta.tagIds.filter((value) => typeof value === 'string') : [],
         summary: typeof meta.summary === 'string' ? meta.summary : '',
         thumbnailSrc,

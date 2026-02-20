@@ -2,7 +2,7 @@ export const generatedProjects = [
   {
     "slug": "6Fifty2",
     "title": "6Fifty2",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/6Fifty2/Screen Recording 2024-10-07 171352.mp4",
@@ -93,7 +93,7 @@ export const generatedProjects = [
   {
     "slug": "AIMEXPO_Slaps",
     "title": "AIMEXPO_Slaps",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/AIMEXPO_Slaps/Screen Recording 2025-02-04 110415.mp4",
@@ -135,7 +135,7 @@ export const generatedProjects = [
   {
     "slug": "BK_notYetposted",
     "title": "BK_notYetposted",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/BK_notYetposted/Screen Recording 2024-10-30 195117.mp4",
@@ -156,7 +156,7 @@ export const generatedProjects = [
   {
     "slug": "Carisma_Gems",
     "title": "Carisma_Gems",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/Carisma_Gems/to post/1.png",
@@ -500,7 +500,7 @@ export const generatedProjects = [
   {
     "slug": "CRUX Tina Mifsud",
     "title": "CRUX Tina Mifsud",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/CRUX Tina Mifsud/IMG_20230211_172921.jpg",
@@ -753,7 +753,7 @@ export const generatedProjects = [
   {
     "slug": "Experiments In Entropy 2",
     "title": "Experiments In Entropy 2",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/Experiments In Entropy 2/process/IMG_20221114_151041.jpg",
@@ -1188,7 +1188,7 @@ export const generatedProjects = [
   {
     "slug": "MEMOR_KatherineMaj",
     "title": "MEMOR_KatherineMaj",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/MEMOR_KatherineMaj/final/IMG_20230613_130108.jpg",
@@ -1462,7 +1462,7 @@ export const generatedProjects = [
   {
     "slug": "MUSC",
     "title": "MUSC",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/MUSC/Screen Recording 2025-01-14 140859.mp4",
@@ -1539,7 +1539,7 @@ export const generatedProjects = [
   {
     "slug": "patryk",
     "title": "Patryk",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/patryk/Screen Recording 2024-07-11 101706.mp4",
@@ -1609,7 +1609,7 @@ export const generatedProjects = [
   {
     "slug": "Projections & lights",
     "title": "Projections & lights",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/Projections & lights/IMG_20220621_213544.jpg",
@@ -1757,7 +1757,7 @@ export const generatedProjects = [
   {
     "slug": "Raph_Loft",
     "title": "Raph_Loft",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/Raph_Loft/Screenshot 2023-06-01 215106.png",
@@ -1827,7 +1827,7 @@ export const generatedProjects = [
   {
     "slug": "SarahBonnici_Perfume",
     "title": "SarahBonnici_Perfume",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/SarahBonnici_Perfume/Screenshot 2025-04-11 180034.png",
@@ -2619,7 +2619,7 @@ export const generatedProjects = [
   {
     "slug": "SAW",
     "title": "SAW",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/SAW/Screenshot 2025-03-26 220120.png",
@@ -2760,7 +2760,7 @@ export const generatedProjects = [
   {
     "slug": "_Posted",
     "title": "_Posted",
-    "categoryId": "rendering",
+    "categoryId": "renders",
     "tagIds": [],
     "summary": "",
     "thumbnailSrc": "/media/projects/_Posted/Screen Recording 2024-08-05 095025.mp4",
