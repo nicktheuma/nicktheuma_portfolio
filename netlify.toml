@@ -4,7 +4,7 @@
 
 [build.environment]
   VITE_MEDIA_BASE_URL = "https://pub-d95452926a484fe2b637f09b3c3e9288.r2.dev/ntmedia"
-  R2_MANIFEST_SOURCE = "r2"
+  R2_MANIFEST_SOURCE = "auto"
 
 [[redirects]]
   from = "/*"

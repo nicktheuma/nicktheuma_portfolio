@@ -55,16 +55,6 @@ const missingR2EnvVars = requiredR2EnvVars.filter((name) => typeof process.env[n
 const hasR2Credentials = missingR2EnvVars.length === 0
 const r2BucketPrefix = (process.env.R2_BUCKET_PREFIX ?? 'media').trim().replace(/^\/+|\/+$/g, '')
 
-function enforceR2Preflight() {
-  if (manifestSource !== 'r2') {
-    return
-  }
-
-  if (missingR2EnvVars.length > 0) {
-    throw new Error(`R2_MANIFEST_SOURCE is set to "r2" but required env vars are missing: ${missingR2EnvVars.join(', ')}`)
-  }
-}
-
 function buildR2ProjectsPrefix() {
   return [r2BucketPrefix, 'projects'].filter(Boolean).join('/') + '/'
 }
@@ -902,7 +892,6 @@ function writeOutput(projects) {
 
 async function main() {
   try {
-    enforceR2Preflight()
     const projects = await buildProjects()
     if (projects === null) {
       return
