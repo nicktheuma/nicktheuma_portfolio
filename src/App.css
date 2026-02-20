@@ -915,6 +915,54 @@
   border-color: var(--panel-text-color);
 }
 
+.media-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 51;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background: var(--background-color);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+  opacity: 0.7;
+}
+
+.media-modal-nav:hover {
+  background: var(--panel-background);
+  border-color: var(--panel-text-color);
+  opacity: 1;
+}
+
+.media-modal-nav-prev {
+  left: 1rem;
+}
+
+.media-modal-nav-next {
+  right: 1rem;
+}
+
+@media (max-width: 640px) {
+  .media-modal-nav {
+    width: 40px;
+    height: 40px;
+    font-size: 1.75rem;
+  }
+  
+  .media-modal-close {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+}
+
 .media-card-image-button,
 .media-card-video-button {
   display: block;

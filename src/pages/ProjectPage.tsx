@@ -1220,14 +1220,70 @@ export function ProjectPage() {
 
       {modalOpenedKey ? (
         (() => {
-          const modalItem = timelineItems.find((item) => item.key === modalOpenedKey)
+          const currentIndex = timelineItems.findIndex((item) => item.key === modalOpenedKey)
+          const modalItem = currentIndex >= 0 ? timelineItems[currentIndex] : null
           if (!modalItem) return null
 
+          const navigateModal = (direction: 'prev' | 'next') => {
+            const newIndex = direction === 'prev' 
+              ? (currentIndex - 1 + timelineItems.length) % timelineItems.length
+              : (currentIndex + 1) % timelineItems.length
+            setModalOpenedKey(timelineItems[newIndex].key)
+          }
+
+          const handleKeyDown = (e: React.KeyboardEvent) => {
+            if (e.key === 'ArrowLeft') {
+              e.preventDefault()
+              navigateModal('prev')
+            } else if (e.key === 'ArrowRight') {
+              e.preventDefault()
+              navigateModal('next')
+            } else if (e.key === 'Escape') {
+              e.preventDefault()
+              setModalOpenedKey(null)
+            }
+          }
+
+          const touchStartRef = { current: { x: 0, y: 0, time: 0 } }
+          
+          const handleTouchStart = (e: React.TouchEvent) => {
+            touchStartRef.current = {
+              x: e.touches[0].clientX,
+              y: e.touches[0].clientY,
+              time: Date.now()
+            }
+          }
+
+          const handleTouchEnd = (e: React.TouchEvent) => {
+            const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x
+            const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y
+            const deltaTime = Date.now() - touchStartRef.current.time
+            
+            // Only register as swipe if horizontal movement is greater than vertical
+            // and movement is fast enough (< 300ms) and far enough (> 50px)
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50 && deltaTime < 300) {
+              if (deltaX > 0) {
+                navigateModal('prev')
+              } else {
+                navigateModal('next')
+              }
+            }
+          }
+
           return (
-            <div className="media-modal-backdrop" onClick={() => setModalOpenedKey(null)}>
+            <div 
+              className="media-modal-backdrop" 
+              onClick={() => setModalOpenedKey(null)}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              role="dialog"
+              aria-modal="true"
+            >
               <div 
                 className="media-modal" 
                 onClick={(e) => e.stopPropagation()}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
               >
                 <button
                   type="button"
@@ -1236,6 +1292,22 @@ export function ProjectPage() {
                   aria-label="Close modal"
                 >
                   ✕
+                </button>
+                <button
+                  type="button"
+                  className="media-modal-nav media-modal-nav-prev"
+                  onClick={() => navigateModal('prev')}
+                  aria-label="Previous media"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className="media-modal-nav media-modal-nav-next"
+                  onClick={() => navigateModal('next')}
+                  aria-label="Next media"
+                >
+                  ›
                 </button>
                 {modalItem.type === 'image' && (
                   <img 
