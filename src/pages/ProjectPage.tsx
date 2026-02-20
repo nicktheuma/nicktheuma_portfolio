@@ -1223,12 +1223,14 @@ export function ProjectPage() {
           const modalItem = timelineItems.find((item) => item.key === modalOpenedKey)
           if (!modalItem) return null
 
+          const thumbnail = 'thumbnail' in modalItem ? modalItem.thumbnail : undefined
+
           return (
             <div className="media-modal-backdrop" onClick={() => setModalOpenedKey(null)}>
               <div 
                 className="media-modal" 
                 onClick={(e) => e.stopPropagation()}
-                style={modalItem.thumbnail ? { backgroundImage: `url('${modalItem.thumbnail}')`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : undefined}
+                style={thumbnail ? { backgroundImage: `url('${thumbnail}')`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : undefined}
               >
                 <button
                   type="button"
