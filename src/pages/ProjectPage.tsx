@@ -745,6 +745,20 @@ export function ProjectPage() {
                         ))}
                       </select>
                     </div>
+                    <div>
+                      <label className="search-label" htmlFor="project-theme-panel-title-capitalized">
+                        <input
+                          id="project-theme-panel-title-capitalized"
+                          type="checkbox"
+                          checked={projectTheme.panelTitleCapitalized}
+                          onChange={(event) =>
+                            updateProjectTheme(project.slug, { panelTitleCapitalized: event.target.checked })
+                          }
+                          style={{ marginRight: '0.5rem' }}
+                        />
+                        Capitalize panel titles
+                      </label>
+                    </div>
                   </div>
                   <button type="button" className="admin-button" onClick={() => clearProjectTheme(project.slug)}>
                     Revert to home defaults

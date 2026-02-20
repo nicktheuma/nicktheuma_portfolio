@@ -48,6 +48,7 @@ export type SiteOverrides = {
   homeContent?: Partial<HomeContent>
   homeTheme?: Partial<PageTheme>
   homeGridSettings?: Partial<HomeGridSettings>
+  homePageTitles?: Record<string, string>
   projectThemes?: Record<string, Partial<PageTheme>>
   projectGridSettings?: Record<string, Partial<ProjectGridSettings>>
   projects?: Record<string, ProjectOverride>
@@ -79,6 +80,9 @@ export type SiteContentContextValue = {
   getProjectMediaLayout: (slug: string) => ProjectMediaLayout
   setProjectMediaLayout: (slug: string, layout: ProjectMediaLayout) => void
   clearProjectMediaLayout: (slug: string) => void
+  getHomePageTitle: (slug: string) => string
+  setHomePageTitle: (slug: string, title: string) => void
+  clearHomePageTitle: (slug: string) => void
 }
 
 export const SiteContentContext = createContext<SiteContentContextValue | null>(null)

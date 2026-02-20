@@ -11,6 +11,9 @@
   --overlay-blend-mode: normal;
   --overlay-effect-filter: blur(8px);
   --border-radius: 3px;
+  --panel-title-text-transform: uppercase;
+  --project-grid-row-gap: 0.25rem;
+  --project-grid-column-gap: 0.28rem;
 }
 
 .site-shell {
@@ -238,10 +241,12 @@
   display: grid;
   place-items: center;
   font-size: 1.05rem;
+  mix-blend-mode: difference;
 }
 
 .admin-dock-icon.active {
   background: var(--panel-background);
+  mix-blend-mode: normal;
 }
 
 .admin-dock-sr {
@@ -259,13 +264,52 @@
 .admin-dock-panel {
   width: min(420px, 76vw);
   max-height: calc(100vh - 7rem);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   margin-top: 0;
   backdrop-filter: blur(8px);
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-color) var(--background-color);
+}
+
+.admin-dock-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.admin-dock-panel::-webkit-scrollbar-track {
+  background: var(--background-color);
+  border-radius: var(--border-radius);
+}
+
+.admin-dock-panel::-webkit-scrollbar-thumb {
+  background: var(--text-color);
+  border-radius: var(--border-radius);
+}
+
+.admin-dock-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--border-color);
+}
+
+.admin-dock-page .admin-dock-panel {
+  max-height: calc(100vh - 12rem);
 }
 
 .admin-dock-panel h3 {
   margin: 0;
+  mix-blend-mode: difference;
+  color: var(--text-color);
+}
+
+.admin-dock-panel .search-label,
+.admin-dock-panel label {
+  mix-blend-mode: difference;
+  color: var(--text-color);
+}
+
+.admin-dock-panel p {
+  mix-blend-mode: difference;
+  color: var(--text-color);
 }
 
 .admin-textarea {
@@ -527,6 +571,10 @@
     top: 9.2rem;
   }
 
+  .admin-dock-page .admin-dock-panel {
+    max-height: calc(100vh - 11rem);
+  }
+
   .admin-dock-panel {
     width: min(360px, 84vw);
   }
@@ -699,10 +747,10 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: flex-start;
-  text-align: left;
+  align-items: flex-end;
+  text-align: right;
   gap: 0.3rem;
-  padding: 0.8rem;
+  padding: var(--project-grid-row-gap, 0.25rem) var(--project-grid-column-gap, 0.28rem);
   background: transparent;
   transform: none;
   opacity: 1;
@@ -738,28 +786,38 @@
   color: var(--panel-text-color);
 }
 
+[data-caption-panel="true"] .media-card-body.panel-caption p {
+  font-size: 0.55rem;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
 [data-caption-panel="true"] .media-card-body.panel-caption .tag-row,
 [data-caption-panel="true"] .media-card-body.panel-caption .download-link {
   color: var(--panel-text-color);
+  font-size: 0.5rem;
 }
 
 [data-caption-panel="true"] .media-card-body.panel-caption h3 {
-  font-size: clamp(1.25rem, 3.2vw, 2.2rem);
-  line-height: 1.12;
+  font-size: 0.65rem;
+  line-height: 1.2;
   overflow-wrap: anywhere;
   word-break: break-word;
+  text-transform: var(--panel-title-text-transform, uppercase);
+  letter-spacing: 0.02em;
+  font-weight: 400;
 }
 
 .media-card.tile-wide .media-card-body.panel-caption h3,
 .media-card.tile-tall .media-card-body.panel-caption h3,
 .media-card.tile-large .media-card-body.panel-caption h3 {
-  font-size: clamp(1.35rem, 3.9vw, 2.55rem);
+  font-size: 0.7rem;
 }
 
 .media-card.tile-xwide .media-card-body.panel-caption h3,
 .media-card.tile-xtall .media-card-body.panel-caption h3,
 .media-card.tile-hero .media-card-body.panel-caption h3 {
-  font-size: clamp(1.55rem, 4.9vw, 3.1rem);
+  font-size: 0.75rem;
 }
 
 [data-caption-panel="true"] .media-card-body.panel-caption .tag-row {
@@ -773,6 +831,37 @@
 .project-thumb [data-caption-panel="true"] .media-card-body.panel-caption,
 .project-thumb .media-card-body.panel-caption {
   padding-bottom: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+  text-align: right;
+  padding: var(--home-grid-row-gap, 0.5rem);
+}
+
+.project-thumb .media-card-body.panel-caption h3 {
+  font-size: clamp(0.9rem, 4vw, 2.25rem) !important;
+  padding-right: 2.5%;
+  text-transform: none !important;
+  letter-spacing: -0.01em !important;
+  font-weight: 700 !important;
+  text-align: right !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+  line-height: 1 !important;
+  max-width: 60% !important;
+  margin: 0 !important;
+  padding-left: var(--home-grid-row-gap, 0.5rem) !important;
+}
+
+.project-thumb .media-card-body.panel-caption p {
+  font-size: 0.75rem !important;
+  text-transform: none !important;
+}
+
+.project-thumb .media-card-body.panel-caption .tag-row {
+  text-transform: none !important;
 }
 
 @media (hover: hover) and (pointer: fine) {

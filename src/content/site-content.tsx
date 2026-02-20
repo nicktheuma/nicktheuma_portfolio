@@ -26,7 +26,7 @@ const fallbackAdminCode = 'NT_ADMIN_2026'
 
 const defaultSiteSettings: SiteSettings = {
   brandName: 'Nick Theuma',
-  footerText: 'Currently under construction. Disregard anything you see. It is all too real.',
+  footerText: 'Currently under construction. Things you see may not be real.',
 }
 
 const defaultHomeContent: HomeContent = {
@@ -418,6 +418,41 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  const getHomePageTitle = (slug: string): string => {
+    const customTitle = overrides.homePageTitles?.[slug]
+    if (customTitle !== undefined) {
+      return customTitle
+    }
+    const project = baseProjects.find((p) => p.slug === slug)
+    return project ? project.title.toLowerCase() : ''
+  }
+
+  const setHomePageTitle = (slug: string, title: string) => {
+    setOverrides((previous) => ({
+      ...previous,
+      homePageTitles: {
+        ...(previous.homePageTitles ?? {}),
+        [slug]: title,
+      },
+    }))
+  }
+
+  const clearHomePageTitle = (slug: string) => {
+    setOverrides((previous) => {
+      const currentTitles = previous.homePageTitles ?? {}
+      if (!(slug in currentTitles)) {
+        return previous
+      }
+
+      const remainingTitles = { ...currentTitles }
+      delete remainingTitles[slug]
+      return {
+        ...previous,
+        homePageTitles: remainingTitles,
+      }
+    })
+  }
+
   const value: SiteContentContextValue = {
     isAdmin,
     unlockAdmin,
@@ -443,6 +478,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     getProjectMediaLayout,
     setProjectMediaLayout,
     clearProjectMediaLayout,
+    getHomePageTitle,
+    setHomePageTitle,
+    clearHomePageTitle,
   }
 
   return <SiteContentContext.Provider value={value}>{children}</SiteContentContext.Provider>

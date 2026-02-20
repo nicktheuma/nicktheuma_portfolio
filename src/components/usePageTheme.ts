@@ -26,6 +26,7 @@ export function usePageTheme(theme: PageTheme) {
     setThemeVariable('--transparent-color', theme.transparentColor)
     setThemeVariable('--overlay-blend-mode', theme.overlayBlendMode)
     setThemeVariable('--overlay-effect-filter', overlayEffectFilterMap[theme.overlayEffect])
+    setThemeVariable('--panel-title-text-transform', theme.panelTitleCapitalized ? 'uppercase' : 'none')
 
     return () => {
       for (const [variableName, previousValue] of previousValues.entries()) {
@@ -45,5 +46,6 @@ export function usePageTheme(theme: PageTheme) {
     theme.transparentColor,
     theme.overlayBlendMode,
     theme.overlayEffect,
+    theme.panelTitleCapitalized,
   ])
 }

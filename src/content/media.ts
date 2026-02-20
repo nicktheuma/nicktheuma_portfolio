@@ -86,6 +86,7 @@ export type PageTheme = {
   transparentColor: string
   overlayBlendMode: OverlayBlendMode
   overlayEffect: OverlayEffect
+  panelTitleCapitalized: boolean
 }
 
 export const defaultPageTheme: PageTheme = {
@@ -97,6 +98,7 @@ export const defaultPageTheme: PageTheme = {
   transparentColor: 'rgba(0, 0, 0, 0)',
   overlayBlendMode: 'normal',
   overlayEffect: 'none',
+  panelTitleCapitalized: true,
 }
 
 export const homePageTheme: PageTheme = {

@@ -2,6 +2,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import type { Mesh } from 'three'
+import { emissive } from 'three/tsl'
 
 function RotatingForm() {
   const meshRef = useRef<Mesh>(null)
@@ -17,7 +18,7 @@ function RotatingForm() {
   return (
     <mesh ref={meshRef}>
       <icosahedronGeometry args={[1.2, 1]} />
-      <meshStandardMaterial color="#ff1717" metalness={0.2} roughness={0.3} />
+      <meshStandardMaterial color="#aaff00" metalness={0.1} roughness={0.5} emissive="#aaff00" emissiveIntensity={0.3} />
     </mesh>
   )
 }

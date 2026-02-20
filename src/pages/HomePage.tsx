@@ -30,6 +30,9 @@ export function HomePage() {
     updateHomeContent,
     homeGridSettings,
     updateHomeGridSettings,
+    getHomePageTitle,
+    setHomePageTitle,
+    clearHomePageTitle,
   } = useSiteContent()
   usePageTheme(homeTheme)
   useManagedVideoPreviews(pageRef)
@@ -372,7 +375,55 @@ export function HomePage() {
                         ))}
                       </select>
                     </div>
+                    <div>
+                      <label className="search-label" htmlFor="home-theme-panel-title-capitalized">
+                        <input
+                          id="home-theme-panel-title-capitalized"
+                          type="checkbox"
+                          checked={homeTheme.panelTitleCapitalized}
+                          onChange={(event) => updateHomeTheme({ panelTitleCapitalized: event.target.checked })}
+                          style={{ marginRight: '0.5rem' }}
+                        />
+                        Capitalize panel titles
+                      </label>
+                    </div>
                   </div>
+                </div>
+              ),
+            },
+            {
+              id: 'home-project-titles',
+              icon: '✏',
+              label: 'Project titles',
+              content: (
+                <div className="admin-panel">
+                  <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', opacity: 0.8 }}>
+                    Customize how project titles appear on the homepage
+                  </p>
+                  {filteredProjects.map((project) => (
+                    <div key={project.slug} style={{ marginBottom: '0.75rem' }}>
+                      <label className="search-label" htmlFor={`home-title-${project.slug}`}>
+                        {project.title}
+                      </label>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <input
+                          id={`home-title-${project.slug}`}
+                          className="search-input"
+                          value={getHomePageTitle(project.slug)}
+                          onChange={(event) => setHomePageTitle(project.slug, event.target.value)}
+                          placeholder={project.title.toLowerCase()}
+                        />
+                        <button
+                          type="button"
+                          className="admin-button"
+                          onClick={() => clearHomePageTitle(project.slug)}
+                          title="Reset to default"
+                        >
+                          ↻
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ),
             },
@@ -547,7 +598,7 @@ export function HomePage() {
                   </div>
                 )}
                 <div className="media-card-body panel-caption">
-                  <h3>{project.title}</h3>
+                  <h3>{getHomePageTitle(project.slug)}</h3>
                   <p>{project.summary}</p>
                   <p className="tag-row">{getProjectTagLabels(project).join(' • ')}</p>
                 </div>

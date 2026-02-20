@@ -3,9 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { AdminDock } from './AdminDock'
 import { useSiteContent } from '../content/use-site-content'
 
-const navItems = [
-  { to: '/', label: 'Home', end: true },
-]
+const navItems: Array<{ to: string; label: string; end?: boolean }> = []
 
 export function Layout() {
   const {
@@ -23,20 +21,89 @@ export function Layout() {
   const [newAdminCode, setNewAdminCode] = useState('')
   const [confirmAdminCode, setConfirmAdminCode] = useState('')
   const [adminCodeFeedback, setAdminCodeFeedback] = useState('')
+  const [tapCount, setTapCount] = useState(0)
+  const [tapTimer, setTapTimer] = useState<number | null>(null)
+
+  // Triple-tap on brand name to toggle admin (works on mobile)
+  const handleBrandClick = (event: React.MouseEvent) => {
+    event.preventDefault()
+    
+    // Clear existing timer
+    if (tapTimer) {
+      window.clearTimeout(tapTimer)
+    }
+
+    const newTapCount = tapCount + 1
+
+    if (newTapCount === 3) {
+      // Triple tap detected - toggle admin
+      if (isAdmin) {
+        lockAdmin()
+      } else if (isUnlockOpen) {
+        setIsUnlockOpen(false)
+        setAccessCode('')
+        setUnlockError('')
+      } else {
+        setIsUnlockOpen(true)
+        setUnlockError('')
+      }
+      setTapCount(0)
+      setTapTimer(null)
+    } else {
+      setTapCount(newTapCount)
+      // Reset tap count after 500ms
+      const timer = window.setTimeout(() => {
+        setTapCount(0)
+        setTapTimer(null)
+      }, 500)
+      setTapTimer(timer)
+    }
+  }
 
   useEffect(() => {
     const handleKeydown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || event.ctrlKey || event.metaKey || event.altKey || isAdmin) {
+      // Only handle ESC key without modifiers
+      if (event.key !== 'Escape') {
+        return
+      }
+      
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
         return
       }
 
+      // Priority 1: Close unlock modal if open (regardless of focus)
       if (isUnlockOpen) {
+        event.preventDefault()
+        event.stopPropagation()
         setIsUnlockOpen(false)
         setAccessCode('')
         setUnlockError('')
         return
       }
 
+      // Check if typing in an input field (for other admin panels)
+      const target = event.target as HTMLElement
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true') {
+        return
+      }
+
+      // Check if another modal is open (like media modal) - let it handle ESC first
+      const hasOtherModal = document.querySelector('.media-modal-backdrop')
+      if (hasOtherModal) {
+        return
+      }
+
+      // Prevent default behavior and stop propagation
+      event.preventDefault()
+      event.stopPropagation()
+
+      // Priority 2: Exit admin mode if active
+      if (isAdmin) {
+        lockAdmin()
+        return
+      }
+
+      // Priority 3: Open unlock modal
       setIsUnlockOpen(true)
       setUnlockError('')
     }
@@ -44,8 +111,11 @@ export function Layout() {
     window.addEventListener('keydown', handleKeydown)
     return () => {
       window.removeEventListener('keydown', handleKeydown)
+      if (tapTimer) {
+        window.clearTimeout(tapTimer)
+      }
     }
-  }, [isAdmin, isUnlockOpen])
+  }, [isAdmin, isUnlockOpen, lockAdmin, tapTimer])
 
   const handleUnlock = () => {
     if (unlockAdmin(accessCode)) {
@@ -82,7 +152,9 @@ export function Layout() {
     <div className="site-shell">
       <header className="site-header">
         <h1 className="brand">
-          <Link to="/">{siteSettings.brandName}</Link>
+          <Link to="/" onClick={handleBrandClick}>
+            {siteSettings.brandName}
+          </Link>
         </h1>
         <nav className="site-nav" aria-label="Main navigation">
           {navItems.map((item) => (
@@ -95,19 +167,13 @@ export function Layout() {
               {item.label}
             </NavLink>
           ))}
-
-          {isAdmin ? (
-            <button type="button" className="admin-button" onClick={lockAdmin}>
-              Exit admin
-            </button>
-          ) : null}
         </nav>
       </header>
 
       {!isAdmin && isUnlockOpen ? (
         <div className="admin-modal-backdrop" role="dialog" aria-modal="true" aria-label="Admin access">
           <div className="admin-modal">
-            <h2>Admin access</h2>
+            <h2> </h2>
             <input
               type="password"
               className="admin-input"
