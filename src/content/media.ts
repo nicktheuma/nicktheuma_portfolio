@@ -25,6 +25,7 @@ function resolveMediaUrl(value: string) {
 type ImageItem = {
   title: string
   location: string | null
+  captureDate: string | null
   src: string
   thumbnail?: string
   monochrome?: boolean
@@ -33,6 +34,7 @@ type ImageItem = {
 type VideoItem = {
   title: string
   location: string | null
+  captureDate: string | null
   src: string
   thumbnail?: string
   monochrome?: boolean

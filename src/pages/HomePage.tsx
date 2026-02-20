@@ -41,15 +41,24 @@ export function HomePage() {
   const normalizedSearch = ''
 
   const filteredProjects = useMemo(() => {
-    if (!normalizedSearch) {
-      return projects
-    }
+    const filtered = !normalizedSearch
+      ? projects
+      : projects.filter((project) => {
+          const categoryLabel = getProjectCategoryLabel(project)
+          const tagLabels = getProjectTagLabels(project)
+          const searchableText = [project.title, project.summary, categoryLabel, ...tagLabels].join(' ').toLowerCase()
+          return searchableText.includes(normalizedSearch)
+        })
 
-    return projects.filter((project) => {
-      const categoryLabel = getProjectCategoryLabel(project)
-      const tagLabels = getProjectTagLabels(project)
-      const searchableText = [project.title, project.summary, categoryLabel, ...tagLabels].join(' ').toLowerCase()
-      return searchableText.includes(normalizedSearch)
+    // Sort by most recent captureDate from first image or video (most recent first)
+    return [...filtered].sort((a, b) => {
+      const aFirstMedia = a.images?.[0] || a.videos?.[0]
+      const bFirstMedia = b.images?.[0] || b.videos?.[0]
+      
+      const aDate = aFirstMedia?.captureDate ? new Date(aFirstMedia.captureDate).getTime() : 0
+      const bDate = bFirstMedia?.captureDate ? new Date(bFirstMedia.captureDate).getTime() : 0
+      
+      return bDate - aDate // Most recent first
     })
   }, [normalizedSearch, projects])
 
