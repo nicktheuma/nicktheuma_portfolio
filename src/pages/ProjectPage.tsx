@@ -123,6 +123,8 @@ function tileFromDragDelta(startTile: MediaTileSize, deltaX: number, deltaY: num
     xwide: { x: 3, y: 1 },
     xtall: { x: 1, y: 3 },
     hero: { x: 3, y: 2 },
+    portrait: { x: 1, y: 2 },
+    landscape: { x: 2, y: 1 },
   }
 
   const stepX = deltaX > 120 ? 2 : deltaX > 44 ? 1 : deltaX < -120 ? -2 : deltaX < -44 ? -1 : 0
@@ -141,6 +143,8 @@ function tileFromDragDelta(startTile: MediaTileSize, deltaX: number, deltaY: num
     { tile: 'xwide', x: 3, y: 1 },
     { tile: 'xtall', x: 1, y: 3 },
     { tile: 'hero', x: 3, y: 2 },
+    { tile: 'portrait', x: 1, y: 2 },
+    { tile: 'landscape', x: 2, y: 1 },
   ]
 
   let best = startTile
@@ -190,8 +194,10 @@ function tileVector(tile: MediaTileSize) {
     case 'small':
       return { x: 1, y: 1 }
     case 'wide':
+    case 'landscape':
       return { x: 2, y: 1 }
     case 'tall':
+    case 'portrait':
       return { x: 1, y: 2 }
     case 'large':
       return { x: 2, y: 2 }
@@ -429,7 +435,7 @@ export function ProjectPage() {
 
   const tileUnitSpan = Math.max(1, Math.floor(projectGridSettings.columns / 4))
   const tileWideSpan = Math.min(projectGridSettings.columns, Math.max(2, tileUnitSpan * 2))
-  const tileXwideSpan = Math.min(projectGridSettings.columns, Math.max(3, tileUnitSpan * 3))
+  const tileXwideSpan = Math.min(projectGridSettings.columns, tileWideSpan * 2)
   const showGridGuides = isAdmin && (draggingKey !== null || activeAdminSectionId === 'project-layout')
 
   const areNumberArraysEqual = (left: number[], right: number[]) => {

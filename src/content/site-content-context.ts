@@ -12,7 +12,7 @@ export type HomeContent = {
   details: string
 }
 
-export type MediaTileSize = 'tiny' | 'small' | 'wide' | 'tall' | 'large' | 'xwide' | 'xtall' | 'hero'
+export type MediaTileSize = 'tiny' | 'small' | 'wide' | 'tall' | 'large' | 'xwide' | 'xtall' | 'hero' | 'portrait' | 'landscape'
 
 export type HomeGridSettings = {
   columns: number

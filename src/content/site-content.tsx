@@ -46,7 +46,7 @@ const defaultHomeGridSettings: HomeGridSettings = {
 
 const defaultProjectGridSettings: ProjectGridSettings = {
   columns: 12,
-  rowHeight: 8,
+  rowHeight: 9,
   rowGap: 0.25,
   columnGap: 0.28,
 }

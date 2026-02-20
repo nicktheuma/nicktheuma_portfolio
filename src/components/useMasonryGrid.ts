@@ -27,7 +27,11 @@ export function useMasonryGrid(rootRef: RefObject<HTMLElement | null>, options: 
     const resizeItem = (item: HTMLElement) => {
       const styles = window.getComputedStyle(grid)
       const rowGap = Number.parseFloat(styles.rowGap || '0') || 0
-      const rowHeight = Number.parseFloat(styles.gridAutoRows || '1') || 1
+      const autoRowHeight = Number.parseFloat(styles.gridAutoRows || '')
+      const configuredRowHeight = Number.parseFloat(styles.getPropertyValue('--project-grid-row-height') || '')
+      const rowHeight =
+        (Number.isFinite(autoRowHeight) && autoRowHeight > 0 ? autoRowHeight : undefined) ??
+        (Number.isFinite(configuredRowHeight) && configuredRowHeight > 0 ? configuredRowHeight : 8)
 
       item.style.gridRowEnd = 'auto'
       const itemHeight = item.getBoundingClientRect().height
