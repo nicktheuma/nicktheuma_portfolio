@@ -308,8 +308,22 @@ async function buildProjectsFromR2() {
       const meta = await readR2Json(s3, bucket, metaKey)
       const counters = {}
 
-      const imageKeys = [...(imageKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
-      const videoKeys = [...(videoKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
+      const imageKeys = [...(imageKeysBySlug.get(slug) ?? [])].sort((left, right) => {
+        const leftDate = lastModifiedByKey.get(left)
+        const rightDate = lastModifiedByKey.get(right)
+        if (leftDate && rightDate) {
+          return rightDate - leftDate // Most recent first
+        }
+        return compareRemoteObjectKeys(left, right, slug)
+      })
+      const videoKeys = [...(videoKeysBySlug.get(slug) ?? [])].sort((left, right) => {
+        const leftDate = lastModifiedByKey.get(left)
+        const rightDate = lastModifiedByKey.get(right)
+        if (leftDate && rightDate) {
+          return rightDate - leftDate // Most recent first
+        }
+        return compareRemoteObjectKeys(left, right, slug)
+      })
       const modelKeys = [...(modelKeysBySlug.get(slug) ?? [])].sort((left, right) => compareRemoteObjectKeys(left, right, slug))
 
       const images = await Promise.all(
@@ -833,10 +847,10 @@ async function collectProjectMedia(projectFolderPath) {
     }))
   )
 
-  // Sort by capture date (oldest first), fallback to file path
+  // Sort by capture date (most recent first), fallback to file path
   const sortByDate = (a, b) => {
     if (a.metadata.captureDate && b.metadata.captureDate) {
-      return a.metadata.captureDate - b.metadata.captureDate
+      return b.metadata.captureDate - a.metadata.captureDate
     }
     if (a.metadata.captureDate) return -1
     if (b.metadata.captureDate) return 1

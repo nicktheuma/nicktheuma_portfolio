@@ -22,15 +22,9 @@ import {
 import type { MediaTileSize } from '../content/site-content-context'
 import { useSiteContent } from '../content/use-site-content'
 
-const tilePattern: Array<'small' | 'wide' | 'tall' | 'large'> = ['large', 'small', 'wide', 'small', 'tall', 'small', 'wide']
-
-function getTileForIndex(index: number, total: number): 'small' | 'wide' | 'tall' | 'large' {
-  const remaining = total - index
-  if (remaining <= 2) {
-    return 'small'
-  }
-
-  return tilePattern[index % tilePattern.length]
+function getTileForIndex(): 'small' | 'wide' | 'tall' | 'large' {
+  // Default to small square tiles - users can resize individually via drag-to-resize
+  return 'small'
 }
 
 function parseChronologyValue(value: string) {
@@ -104,12 +98,11 @@ function buildTimelineItems(project: Project) {
   }))
 
   const sorted = [...images, ...videos, ...models].sort((left, right) => left.order - right.order)
-  const total = sorted.length
 
   return sorted.map((item, index) => ({
     ...item,
     baseOrder: index,
-    tile: getTileForIndex(index, total),
+    tile: getTileForIndex(),
   }))
 }
 
@@ -404,7 +397,31 @@ export function ProjectPage() {
       ? swapKeys(baseKeys, draggingKey, targetKey)
       : reorderKeysBeforeTarget(baseKeys, draggingKey, targetKey)
 
-    commitOrder(orderedKeys, replaceAndFit ? { [draggingKey]: targetItem.tile } : undefined)
+    commitOrder(
+      orderedKeys,
+      replaceAndFit ? { [draggingKey]: targetItem.tile, [targetKey]: movingItem.tile } : undefined
+    )
+  }
+
+  const findTileKeyAtPosition = (clientX: number, clientY: number): string | null => {
+    const element = document.elementFromPoint(clientX, clientY)
+    if (!element) {
+      return null
+    }
+
+    const mediaCard = element.closest('.media-card')
+    if (!mediaCard) {
+      return null
+    }
+
+    for (const item of displayTimelineItems) {
+      const itemElement = document.querySelector(`[data-media-key="${item.key}"]`)
+      if (itemElement === mediaCard) {
+        return item.key
+      }
+    }
+
+    return null
   }
 
   const updatePreviewOrder = (targetKey: string) => {
@@ -412,10 +429,29 @@ export function ProjectPage() {
       return
     }
 
+    const movingItem = displayTimelineItems.find((item) => item.key === draggingKey)
+    const targetItem = displayTimelineItems.find((item) => item.key === targetKey)
+    if (!movingItem || !targetItem) {
+      return
+    }
+
+    const replaceAndFit = shouldReplaceAndFit(movingItem.tile, targetItem.tile)
+
     setPreviewOrderKeys((previous) => {
       const baseKeys = previous ?? timelineItems.map((item) => item.key)
-      return reorderKeysBeforeTarget(baseKeys, draggingKey, targetKey)
+      return replaceAndFit
+        ? swapKeys(baseKeys, draggingKey, targetKey)
+        : reorderKeysBeforeTarget(baseKeys, draggingKey, targetKey)
     })
+
+    if (replaceAndFit) {
+      setPreviewTileByKey({
+        [draggingKey]: targetItem.tile,
+        [targetKey]: movingItem.tile,
+      })
+    } else {
+      setPreviewTileByKey({})
+    }
   }
 
   const toggleItemMonochrome = (itemKey: string, currentMonochrome: boolean, currentTile: MediaTileSize) => {
@@ -824,6 +860,7 @@ export function ProjectPage() {
               return (
                 <article
                   key={item.key}
+                  data-media-key={item.key}
                   className={`media-card tile-${item.tile}${item.monochrome ? ' media-monochrome' : ''}${isAdmin ? ' admin-draggable' : ''}${draggingKey === item.key ? ' is-dragging' : ''}${dropTargetKey === item.key ? ' is-drop-target' : ''}${resizingKey === item.key || draggingKey === item.key || editedTileKey === item.key ? ' is-editing' : ''}`}
                   data-caption-panel="true"
                   draggable={isAdmin}
@@ -838,19 +875,16 @@ export function ProjectPage() {
                     event.dataTransfer.effectAllowed = 'move'
                     event.dataTransfer.setData('text/plain', item.key)
                   }}
-                  onDragEnter={() => {
-                    if (isAdmin && draggingKey && draggingKey !== item.key) {
-                      setDropTargetKey(item.key)
-                      updatePreviewOrder(item.key)
-                    }
-                  }}
                   onDragOver={(event) => {
-                    if (isAdmin) {
-                      event.preventDefault()
-                      if (draggingKey && draggingKey !== item.key) {
-                        setDropTargetKey(item.key)
-                        updatePreviewOrder(item.key)
-                      }
+                    if (!isAdmin || !draggingKey) {
+                      return
+                    }
+
+                    event.preventDefault()
+                    const targetKey = findTileKeyAtPosition(event.clientX, event.clientY)
+                    if (targetKey && targetKey !== draggingKey && targetKey !== dropTargetKey) {
+                      setDropTargetKey(targetKey)
+                      updatePreviewOrder(targetKey)
                     }
                   }}
                   onDrop={(event) => {
@@ -863,11 +897,13 @@ export function ProjectPage() {
                     setDraggingKey(null)
                     setDropTargetKey(null)
                     setPreviewOrderKeys(null)
+                    setPreviewTileByKey({})
                   }}
                   onDragEnd={() => {
                     setDraggingKey(null)
                     setDropTargetKey(null)
                     setPreviewOrderKeys(null)
+                    setPreviewTileByKey({})
                   }}
                 >
                   {!item.src || failedImages[imageKey] ? (
@@ -942,6 +978,7 @@ export function ProjectPage() {
               return (
                 <article
                   key={item.key}
+                  data-media-key={item.key}
                   className={`media-card tile-${item.tile}${item.monochrome ? ' media-monochrome' : ''}${isAdmin ? ' admin-draggable' : ''}${draggingKey === item.key ? ' is-dragging' : ''}${dropTargetKey === item.key ? ' is-drop-target' : ''}${resizingKey === item.key || draggingKey === item.key || editedTileKey === item.key ? ' is-editing' : ''}`}
                   data-video-panel="true"
                   data-caption-panel="true"
@@ -957,19 +994,16 @@ export function ProjectPage() {
                     event.dataTransfer.effectAllowed = 'move'
                     event.dataTransfer.setData('text/plain', item.key)
                   }}
-                  onDragEnter={() => {
-                    if (isAdmin && draggingKey && draggingKey !== item.key) {
-                      setDropTargetKey(item.key)
-                      updatePreviewOrder(item.key)
-                    }
-                  }}
                   onDragOver={(event) => {
-                    if (isAdmin) {
-                      event.preventDefault()
-                      if (draggingKey && draggingKey !== item.key) {
-                        setDropTargetKey(item.key)
-                        updatePreviewOrder(item.key)
-                      }
+                    if (!isAdmin || !draggingKey) {
+                      return
+                    }
+
+                    event.preventDefault()
+                    const targetKey = findTileKeyAtPosition(event.clientX, event.clientY)
+                    if (targetKey && targetKey !== draggingKey && targetKey !== dropTargetKey) {
+                      setDropTargetKey(targetKey)
+                      updatePreviewOrder(targetKey)
                     }
                   }}
                   onDrop={(event) => {
@@ -982,11 +1016,13 @@ export function ProjectPage() {
                     setDraggingKey(null)
                     setDropTargetKey(null)
                     setPreviewOrderKeys(null)
+                    setPreviewTileByKey({})
                   }}
                   onDragEnd={() => {
                     setDraggingKey(null)
                     setDropTargetKey(null)
                     setPreviewOrderKeys(null)
+                    setPreviewTileByKey({})
                   }}
                 >
                   {failedVideos[videoKey] || !item.src ? (
@@ -1064,6 +1100,7 @@ export function ProjectPage() {
             return (
               <article
                 key={item.key}
+                data-media-key={item.key}
                 className={`media-card tile-${item.tile}${item.monochrome ? ' media-monochrome' : ''}${isAdmin ? ' admin-draggable' : ''}${draggingKey === item.key ? ' is-dragging' : ''}${dropTargetKey === item.key ? ' is-drop-target' : ''}${resizingKey === item.key || draggingKey === item.key || editedTileKey === item.key ? ' is-editing' : ''}`}
                 data-caption-panel="true"
                 draggable={isAdmin}
@@ -1078,19 +1115,16 @@ export function ProjectPage() {
                   event.dataTransfer.effectAllowed = 'move'
                   event.dataTransfer.setData('text/plain', item.key)
                 }}
-                onDragEnter={() => {
-                  if (isAdmin && draggingKey && draggingKey !== item.key) {
-                    setDropTargetKey(item.key)
-                    updatePreviewOrder(item.key)
-                  }
-                }}
                 onDragOver={(event) => {
-                  if (isAdmin) {
-                    event.preventDefault()
-                    if (draggingKey && draggingKey !== item.key) {
-                      setDropTargetKey(item.key)
-                      updatePreviewOrder(item.key)
-                    }
+                  if (!isAdmin || !draggingKey) {
+                    return
+                  }
+
+                  event.preventDefault()
+                  const targetKey = findTileKeyAtPosition(event.clientX, event.clientY)
+                  if (targetKey && targetKey !== draggingKey && targetKey !== dropTargetKey) {
+                    setDropTargetKey(targetKey)
+                    updatePreviewOrder(targetKey)
                   }
                 }}
                 onDrop={(event) => {
@@ -1103,11 +1137,13 @@ export function ProjectPage() {
                   setDraggingKey(null)
                   setDropTargetKey(null)
                   setPreviewOrderKeys(null)
+                  setPreviewTileByKey({})
                 }}
                 onDragEnd={() => {
                   setDraggingKey(null)
                   setDropTargetKey(null)
                   setPreviewOrderKeys(null)
+                  setPreviewTileByKey({})
                 }}
               >
                 {!item.previewSrc || failedModelPreviews[modelKey] ? (
