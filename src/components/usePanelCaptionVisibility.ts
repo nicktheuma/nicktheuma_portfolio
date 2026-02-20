@@ -35,26 +35,24 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
 
       const updateMobileOverlay = () => {
         const viewportHeight = window.innerHeight
-        const viewportCenter = viewportHeight / 2
 
         for (const panel of panels) {
           const rect = panel.getBoundingClientRect()
-          const panelCenter = rect.top + rect.height / 2
-          const distance = Math.abs(panelCenter - viewportCenter)
           
-          // Calculate opacity based on distance from viewport center
-          // Minimum 0.3 (30%), maximum 1.0 (100%)
+          // Calculate what percentage of the tile is visible
+          const visibleTop = Math.max(rect.top, 0)
+          const visibleBottom = Math.min(rect.bottom, viewportHeight)
+          const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+          const visibilityRatio = visibleHeight / rect.height
+          
+          // 0% opacity when >= 30% visible, fade to 100% as it goes from 30% to 0% visible
           let opacity = 0
-          if (distance < 100) {
-            opacity = (distance / 100) * 0.5
-          } else if (distance < 400) {
-            opacity = 0.5 + ((distance - 100) / 300) * 0.5
+          if (visibilityRatio >= 0.3) {
+            opacity = 0
           } else {
-            opacity = 1.0
+            // Linear fade from 0% (at 30% visible) to 100% (at 0% visible)
+            opacity = (0.3 - visibilityRatio) / 0.3
           }
-
-          // Ensure no opacity below 30%
-          opacity = Math.max(opacity, 0.3)
 
           panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
         }
@@ -95,15 +93,20 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
           for (const entry of entries) {
             const panel = entry.target as HTMLElement
             
-            // If visible >= 50% on screen, no overlay (opacity 0)
-            // If visible < 50% on screen, full overlay (opacity 1)
-            const opacity = entry.intersectionRatio >= 0.5 ? 0 : 1
+            // 0% opacity when >= 30% visible, fade to 100% as it goes from 30% to 0% visible
+            let opacity = 0
+            if (entry.intersectionRatio >= 0.3) {
+              opacity = 0
+            } else {
+              // Linear fade from 0% (at 30% visible) to 100% (at 0% visible)
+              opacity = (0.3 - entry.intersectionRatio) / 0.3
+            }
             intersectionOpacity.set(panel, opacity)
             updatePanelOpacity(panel)
           }
         },
         {
-          threshold: [0, 0.25, 0.5, 0.75, 1],
+          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
         },
       )
 
