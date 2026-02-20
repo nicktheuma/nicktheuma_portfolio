@@ -1,6 +1,7 @@
 import { readdir, stat } from 'node:fs/promises'
 import { createReadStream } from 'node:fs'
 import path from 'node:path'
+import { PassThrough } from 'node:stream'
 import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
@@ -33,6 +34,8 @@ const testFileInput = (process.env.R2_TEST_FILE ?? '').trim()
 const shouldSyncOnlyFirstFile = (process.env.R2_TEST_FIRST ?? 'false').trim().toLowerCase() === 'true'
 const progressEvery = Math.max(1, Number.parseInt((process.env.R2_PROGRESS_EVERY ?? '25').trim(), 10) || 25)
 const continueOnError = (process.env.R2_CONTINUE_ON_ERROR ?? 'false').trim().toLowerCase() === 'true'
+const retryFailedOnly = (process.env.R2_RETRY_FAILED ?? 'false').trim().toLowerCase() === 'true'
+const failedListPath = (process.env.R2_FAILED_LIST ?? path.join(projectRoot, '.r2-failed.json')).trim()
 
 const endpoint = `https://${accountId}.r2.cloudflarestorage.com`
 
@@ -52,6 +55,10 @@ function toPosixPath(value) {
 function toObjectKey(relativePath) {
   const normalizedRelativePath = toPosixPath(relativePath).replace(/^\/+/, '')
   return bucketPrefix ? `${bucketPrefix}/${normalizedRelativePath}` : normalizedRelativePath
+}
+
+function toRelativePath(localFilePath) {
+  return toPosixPath(path.relative(localMediaRoot, localFilePath)).replace(/^\/+/, '')
 }
 
 function detectContentType(filePath) {
@@ -145,13 +152,46 @@ async function remoteObjectMatches(localKey, localStats) {
 async function uploadFile(localFilePath, objectKey, fileStats) {
   const multipartThreshold = 100 * 1024 * 1024 // 100MB
   const partSize = 10 * 1024 * 1024 // 10MB chunks
+  const progressLabel = arguments.length > 3 ? arguments[3] : ''
+
+  const totalBytes = fileStats.size
+  const totalMB = (totalBytes / (1024 * 1024)).toFixed(1)
+  const logEveryBytes = 5 * 1024 * 1024
+  let nextLogBytes = logEveryBytes
+  let lastLogTime = 0
+
+  const logProgress = (uploadedBytes) => {
+    const now = Date.now()
+    if (uploadedBytes < nextLogBytes && now - lastLogTime < 1000) {
+      return
+    }
+    while (uploadedBytes >= nextLogBytes) {
+      nextLogBytes += logEveryBytes
+    }
+    lastLogTime = now
+    const uploadedMB = (uploadedBytes / (1024 * 1024)).toFixed(1)
+    const label = progressLabel ? `${progressLabel} ` : ''
+    console.log(`${label}Uploading: ${objectKey} (${uploadedMB}/${totalMB} MB)`) // progress update
+  }
 
   if (fileStats.size < multipartThreshold) {
+    const readStream = createReadStream(localFilePath)
+    const passThrough = new PassThrough()
+    let uploadedBytes = 0
+
+    readStream.on('data', (chunk) => {
+      uploadedBytes += chunk.length
+      logProgress(uploadedBytes)
+    })
+    readStream.on('error', (error) => passThrough.destroy(error))
+    readStream.pipe(passThrough)
+
     await s3.send(
       new PutObjectCommand({
         Bucket: bucket,
         Key: objectKey,
-        Body: createReadStream(localFilePath),
+        Body: passThrough,
+        ContentLength: fileStats.size,
         ContentType: detectContentType(localFilePath),
         CacheControl: 'public, max-age=31536000, immutable',
         Metadata: {
@@ -159,6 +199,7 @@ async function uploadFile(localFilePath, objectKey, fileStats) {
         },
       }),
     )
+    logProgress(totalBytes)
     return
   }
 
@@ -179,6 +220,8 @@ async function uploadFile(localFilePath, objectKey, fileStats) {
   const parts = []
   const numParts = Math.ceil(fileStats.size / partSize)
 
+  let uploadedBytes = 0
+
   for (let partNumber = 1; partNumber <= numParts; partNumber++) {
     const start = (partNumber - 1) * partSize
     const end = Math.min(start + partSize, fileStats.size)
@@ -197,6 +240,7 @@ async function uploadFile(localFilePath, objectKey, fileStats) {
         UploadId: uploadId,
         PartNumber: partNumber,
         Body: partBuffer,
+        ContentLength: partBuffer.length,
       }),
     )
 
@@ -204,6 +248,9 @@ async function uploadFile(localFilePath, objectKey, fileStats) {
       PartNumber: partNumber,
       ETag: uploadPartResponse.ETag,
     })
+
+    uploadedBytes = end
+    logProgress(uploadedBytes)
   }
 
   await s3.send(
@@ -214,6 +261,7 @@ async function uploadFile(localFilePath, objectKey, fileStats) {
       MultipartUpload: { Parts: parts },
     }),
   )
+  logProgress(totalBytes)
 }
 
 async function listRemoteKeys(prefix) {
@@ -272,8 +320,7 @@ async function run() {
   if (testFileInput.length > 0) {
     const normalizedRequestedPath = toPosixPath(testFileInput).replace(/^\/+/, '').replace(/^media\//, '')
     const matchedFile = localFiles.find((filePath) => {
-      const relativePath = toPosixPath(path.relative(localMediaRoot, filePath)).replace(/^\/+/, '')
-      return relativePath === normalizedRequestedPath
+      return toRelativePath(filePath) === normalizedRequestedPath
     })
 
     if (!matchedFile) {
@@ -285,6 +332,29 @@ async function run() {
   } else if (shouldSyncOnlyFirstFile) {
     localFiles = localFiles.slice(0, 1)
     console.log('Test mode: syncing only first media file.')
+  }
+
+  if (retryFailedOnly) {
+    let failedList
+    try {
+      failedList = JSON.parse(await (await import('node:fs/promises')).readFile(failedListPath, 'utf8'))
+    } catch (error) {
+      throw new Error(`Failed to read failed list at ${failedListPath}. Set R2_FAILED_LIST or disable R2_RETRY_FAILED.`)
+    }
+
+    const failedSet = new Set(
+      Array.isArray(failedList)
+        ? failedList.filter((value) => typeof value === 'string')
+        : [],
+    )
+
+    if (failedSet.size === 0) {
+      console.log('Retry mode: failed list is empty. Nothing to sync.')
+      return
+    }
+
+    localFiles = localFiles.filter((filePath) => failedSet.has(toRelativePath(filePath)))
+    console.log(`Retry mode: syncing ${localFiles.length} failed file(s) from ${failedSet.size} entries.`)
   }
 
   if (localFiles.length === 0) {
@@ -300,9 +370,10 @@ async function run() {
   let skippedCount = 0
   let failedCount = 0
   const failedFiles = []
+  const failedRelativePaths = []
 
   for (const [index, localFilePath] of localFiles.entries()) {
-    const relativePath = path.relative(localMediaRoot, localFilePath)
+    const relativePath = toRelativePath(localFilePath)
     const objectKey = toObjectKey(relativePath)
     const fileStats = await stat(localFilePath)
     localKeySet.add(objectKey)
@@ -323,6 +394,7 @@ async function run() {
       if (continueOnError) {
         failedCount += 1
         failedFiles.push({ file: objectKey, reason: 'check_failed' })
+        failedRelativePaths.push(relativePath)
         continue
       }
       throw error
@@ -337,13 +409,14 @@ async function run() {
     }
 
     try {
-      await uploadFile(localFilePath, objectKey, fileStats)
+      await uploadFile(localFilePath, objectKey, fileStats, `[${currentNumber}/${localFiles.length}]`)
     } catch (error) {
       console.error(`[${currentNumber}/${localFiles.length}] Failed upload: ${objectKey}`)
       console.error(error.message || error)
       if (continueOnError) {
         failedCount += 1
         failedFiles.push({ file: objectKey, reason: 'upload_failed', error: error.message || String(error) })
+        failedRelativePaths.push(relativePath)
         continue
       }
       throw error
@@ -373,6 +446,14 @@ async function run() {
   console.log(`Done. Uploaded: ${uploadedCount}, Skipped: ${skippedCount}, Failed: ${failedCount}, Deleted: ${deletedCount}`)
 
   if (failedFiles.length > 0) {
+    try {
+      const uniqueFailed = Array.from(new Set(failedRelativePaths)).sort()
+      await (await import('node:fs/promises')).writeFile(failedListPath, JSON.stringify(uniqueFailed, null, 2))
+      console.log(`Wrote failed list to ${failedListPath}`)
+    } catch (error) {
+      console.error(`Failed to write failed list to ${failedListPath}`)
+      console.error(error.message || error)
+    }
     console.log('\nFailed files:')
     for (const { file, reason, error } of failedFiles) {
       console.log(`  - ${file} (${reason})${error ? ': ' + error : ''}`)
