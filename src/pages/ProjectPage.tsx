@@ -380,6 +380,19 @@ export function ProjectPage() {
 
   const getBaseKeys = () => displayTimelineItems.map((timelineItem) => timelineItem.key)
 
+  const resetToChronologicalLayout = () => {
+    // Reset to chronological order with all tiles set to small
+    const chronologicalKeys = baseTimelineItems.map((item) => item.key)
+    const allSmallTiles = chronologicalKeys.reduce<Record<string, MediaTileSize>>((acc, key) => {
+      acc[key] = 'small'
+      return acc
+    }, {})
+    
+    commitOrder(chronologicalKeys, allSmallTiles)
+    setPreviewOrderKeys(null)
+    setPreviewTileByKey({})
+  }
+
   const applyDropOnTarget = (targetKey: string) => {
     if (!draggingKey || draggingKey === targetKey) {
       return
@@ -819,6 +832,9 @@ export function ProjectPage() {
                   </div>
                   <button type="button" className="admin-button" onClick={() => clearProjectMediaLayout(project.slug)}>
                     Reset grid layout
+                  </button>
+                  <button type="button" className="admin-button" onClick={resetToChronologicalLayout}>
+                    Reset to chronological order (small tiles)
                   </button>
                 </div>
               ),
