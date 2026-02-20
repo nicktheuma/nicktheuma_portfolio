@@ -1,0 +1,42 @@
+name: Sync media to Cloudflare R2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - public/media/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r2-media-sync
+  cancel-in-progress: true
+
+jobs:
+  sync-r2:
+    name: Sync media
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Sync media to R2
+        run: npm run sync:r2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_BUCKET_PREFIX: ${{ vars.R2_BUCKET_PREFIX }}
+          R2_DELETE_MISSING: ${{ vars.R2_DELETE_MISSING }}

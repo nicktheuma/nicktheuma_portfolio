@@ -1,0 +1,45 @@
+{
+  "name": "nicktheuma_portfolio",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "generate:media": "node scripts/generate-media-manifest.mjs",
+    "sync:r2": "node scripts/sync-media-to-r2.mjs",
+    "sync:r2:ps": "powershell -ExecutionPolicy Bypass -File scripts/sync-r2-from-env.ps1",
+    "create:project": "node scripts/create-project-template.mjs",
+    "predev": "npm run generate:media",
+    "dev": "vite",
+    "prebuild": "npm run generate:media",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.922.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "exiftool-vendored": "^35.10.0",
+    "gh": "^2.8.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.0",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "heic-convert": "^2.1.0",
+    "sharp": "^0.34.5",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vite": "^7.3.1"
+  }
+}
