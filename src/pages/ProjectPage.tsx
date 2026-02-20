@@ -76,6 +76,7 @@ function buildTimelineItems(project: Project) {
     title: item.title,
     location: item.location,
     src: item.src,
+    thumbnail: item.thumbnail,
     monochrome: item.monochrome ?? false,
     order: parseChronologyValue(`${item.title} ${item.src}`) + index,
   }))
@@ -86,6 +87,7 @@ function buildTimelineItems(project: Project) {
     title: item.title,
     location: item.location,
     src: item.src,
+    thumbnail: item.thumbnail,
     monochrome: item.monochrome ?? false,
     order: parseChronologyValue(`${item.title} ${item.src}`) + index,
   }))
@@ -244,7 +246,7 @@ export function ProjectPage() {
   const editedTimerRef = useRef<number | null>(null)
   const projectTheme = getProjectTheme(slug ?? '')
   usePageTheme(projectTheme)
-  useManagedVideoPreviews(pageRef)
+  useManagedVideoPreviews(pageRef, { hoverMode: 'play' })
   usePanelCaptionVisibility(pageRef)
   useMasonryGrid(pageRef)
 
@@ -870,11 +872,16 @@ export function ProjectPage() {
                       className="media-card-image-button"
                       onClick={() => setModalOpenedKey(item.key)}
                       aria-label={`View ${item.title}`}
+                      style={item.thumbnail ? { backgroundImage: `url('${item.thumbnail}')` } : undefined}
                     >
                       <img
                         src={item.src}
                         alt={item.title}
                         loading="lazy"
+                        data-loaded="false"
+                        onLoad={(e) => {
+                          e.currentTarget.dataset.loaded = 'true'
+                        }}
                         onError={() => {
                           setFailedImages((previous) => ({ ...previous, [imageKey]: true }))
                         }}
@@ -984,15 +991,20 @@ export function ProjectPage() {
                       className="media-card-video-button"
                       onClick={() => setModalOpenedKey(item.key)}
                       aria-label={`View video ${item.title}`}
+                      style={item.thumbnail ? { backgroundImage: `url('${item.thumbnail}')` } : undefined}
                     >
                       <video
                         className="video-timeline-only"
                         src={item.src}
                         data-preview-loop="true"
                         data-interactive-controls="true"
+                        data-loaded="false"
                         controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
                         preload="metadata"
                         loop
+                        onLoadedData={(e) => {
+                          e.currentTarget.dataset.loaded = 'true'
+                        }}
                         onError={() => {
                           setFailedVideos((previous) => ({ ...previous, [videoKey]: true }))
                         }}
@@ -1159,7 +1171,11 @@ export function ProjectPage() {
 
           return (
             <div className="media-modal-backdrop" onClick={() => setModalOpenedKey(null)}>
-              <div className="media-modal" onClick={(e) => e.stopPropagation()}>
+              <div 
+                className="media-modal" 
+                onClick={(e) => e.stopPropagation()}
+                style={modalItem.thumbnail ? { backgroundImage: `url('${modalItem.thumbnail}')`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : undefined}
+              >
                 <button
                   type="button"
                   className="media-modal-close"
@@ -1169,7 +1185,15 @@ export function ProjectPage() {
                   ✕
                 </button>
                 {modalItem.type === 'image' && (
-                  <img src={modalItem.src} alt={modalItem.title} className="media-modal-content" />
+                  <img 
+                    src={modalItem.src} 
+                    alt={modalItem.title} 
+                    className="media-modal-content"
+                    data-loaded="false"
+                    onLoad={(e) => {
+                      e.currentTarget.dataset.loaded = 'true'
+                    }}
+                  />
                 )}
                 {modalItem.type === 'video' && (
                   <video
@@ -1178,6 +1202,10 @@ export function ProjectPage() {
                     controls
                     autoPlay
                     controlsList="nodownload"
+                    data-loaded="false"
+                    onLoadedData={(e) => {
+                      e.currentTarget.dataset.loaded = 'true'
+                    }}
                   />
                 )}
               </div>

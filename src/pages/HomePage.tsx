@@ -421,34 +421,121 @@ export function HomePage() {
           const normalizedThumbnailSrc = project.thumbnailSrc.toLowerCase()
           const isVideoThumbnail = videoThumbnailExtensions.some((extension) => normalizedThumbnailSrc.endsWith(extension))
 
+          // If main thumbnail fails, fallback to first video/image
+          const fallbackImage = project.images?.[0]
+          const fallbackVideo = project.videos?.[0]
+          const hasFallback = !!fallbackImage || !!fallbackVideo
+
+          const displayingThumbnail = failedThumbnails[project.slug] ? null : project.thumbnailSrc
+
+          // Determine what to show if thumbnail failed
+          let fallbackSrc = ''
+          let isFallbackVideo = false
+          if (!displayingThumbnail && hasFallback) {
+            // Prefer video fallback over image
+            if (fallbackVideo?.src) {
+              fallbackSrc = fallbackVideo.src
+              isFallbackVideo = true
+            } else if (fallbackImage?.src) {
+              fallbackSrc = fallbackImage.src
+              isFallbackVideo = false
+            }
+          }
+
+          // Find the thumbnail placeholder for the main thumbnail (if it's a video or image)
+          let thumbnailPlaceholder = ''
+          if (isVideoThumbnail) {
+            // Find the video item that matches the thumbnail src
+            const matchingVideo = project.videos?.find((video) => video.src === project.thumbnailSrc)
+            thumbnailPlaceholder = matchingVideo?.thumbnail || ''
+          } else {
+            // Find the image item that matches the thumbnail src
+            const matchingImage = project.images?.find((image) => image.src === project.thumbnailSrc)
+            thumbnailPlaceholder = matchingImage?.thumbnail || ''
+          }
+
+          // Find thumbnail for fallback
+          const fallbackThumbnail = isFallbackVideo ? fallbackVideo?.thumbnail || '' : fallbackImage?.thumbnail || ''
+
           return (
             <article key={project.slug} className="project-thumb" data-video-panel="true" data-caption-panel="true">
               <Link to={`/projects/${project.slug}`}>
-                {!project.thumbnailSrc || failedThumbnails[project.slug] ? (
+                {!displayingThumbnail && !fallbackSrc ? (
                   <div className="media-empty" aria-hidden="true" />
-                ) : isVideoThumbnail ? (
-                  <video
-                    src={project.thumbnailSrc}
-                    className={project.thumbnailMonochrome ? 'media-monochrome' : undefined}
-                    data-preview-loop="true"
-                    muted
-                    playsInline
-                    preload="metadata"
-                    loop
-                    onError={() => {
-                      setFailedThumbnails((previous) => ({ ...previous, [project.slug]: true }))
-                    }}
-                  />
+                ) : displayingThumbnail && !failedThumbnails[project.slug] ? isVideoThumbnail ? (
+                  <div
+                    className="media-card-video-wrapper"
+                    style={thumbnailPlaceholder ? { backgroundImage: `url('${thumbnailPlaceholder}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+                  >
+                    <video
+                      src={project.thumbnailSrc}
+                      className={project.thumbnailMonochrome ? 'media-monochrome' : undefined}
+                      data-preview-loop="true"
+                      data-loaded="false"
+                      muted
+                      playsInline
+                      preload="metadata"
+                      loop
+                      onLoadedData={(e) => {
+                        e.currentTarget.dataset.loaded = 'true'
+                      }}
+                      onError={() => {
+                        setFailedThumbnails((previous) => ({ ...previous, [project.slug]: true }))
+                      }}
+                    />
+                  </div>
                 ) : (
-                  <img
-                    src={project.thumbnailSrc}
-                    className={project.thumbnailMonochrome ? 'media-monochrome' : undefined}
-                    alt={project.title}
-                    loading="lazy"
-                    onError={() => {
-                      setFailedThumbnails((previous) => ({ ...previous, [project.slug]: true }))
-                    }}
-                  />
+                  <div
+                    className="media-card-image-wrapper"
+                    style={thumbnailPlaceholder ? { backgroundImage: `url('${thumbnailPlaceholder}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+                  >
+                    <img
+                      src={project.thumbnailSrc}
+                      className={project.thumbnailMonochrome ? 'media-monochrome' : undefined}
+                      alt={project.title}
+                      loading="lazy"
+                      data-loaded="false"
+                      onLoad={(e) => {
+                        e.currentTarget.dataset.loaded = 'true'
+                      }}
+                      onError={() => {
+                        setFailedThumbnails((previous) => ({ ...previous, [project.slug]: true }))
+                      }}
+                    />
+                  </div>
+                ) : isFallbackVideo ? (
+                  <div
+                    className="media-card-video-wrapper"
+                    style={fallbackThumbnail ? { backgroundImage: `url('${fallbackThumbnail}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+                  >
+                    <video
+                      src={fallbackSrc}
+                      data-preview-loop="true"
+                      data-loaded="false"
+                      muted
+                      playsInline
+                      preload="metadata"
+                      loop
+                      onLoadedData={(e) => {
+                        e.currentTarget.dataset.loaded = 'true'
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="media-card-image-wrapper"
+                    style={fallbackThumbnail ? { backgroundImage: `url('${fallbackThumbnail}')`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+                  >
+                    <img
+                      src={fallbackSrc}
+                      alt={project.title}
+                      loading="lazy"
+                      data-loaded="false"
+                      onLoad={(e) => {
+                        e.currentTarget.dataset.loaded = 'true'
+                      }}
+                    />
+                  </div>
                 )}
                 <div className="media-card-body panel-caption">
                   <h3>{project.title}</h3>

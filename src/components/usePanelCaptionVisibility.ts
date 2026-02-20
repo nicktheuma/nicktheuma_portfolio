@@ -55,7 +55,9 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
             opacity = 1.0
           }
 
+          const blurRadius = opacity * 8
           panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
+          panel.style.setProperty('--panel-caption-blur', `${blurRadius}px`)
         }
       }
 
@@ -129,12 +131,18 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
         const sOpacity = scrollOpacity.get(panel) ?? 1
         const mOpacity = mouseProximityOpacity.get(panel) ?? 1
         const finalOpacity = Math.min(sOpacity, mOpacity)
+        const blurRadius = finalOpacity * 8
         panel.style.setProperty('--panel-caption-overlay-opacity', finalOpacity.toString())
+        panel.style.setProperty('--panel-caption-blur', `${blurRadius}px`)
       }
 
-      const handleMouseMove = (e: MouseEvent) => {
-        const mouseX = e.clientX
-        const mouseY = e.clientY
+      let mouseAnimationFrameId: number | null = null
+      let lastMouseX = 0
+      let lastMouseY = 0
+
+      const updateMouseProximity = () => {
+        const mouseX = lastMouseX
+        const mouseY = lastMouseY
 
         for (const panel of panels) {
           const rect = panel.getBoundingClientRect()
@@ -159,12 +167,23 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
           mouseProximityOpacity.set(panel, opacity)
           updatePanelOpacity(panel)
         }
+        mouseAnimationFrameId = null
+      }
+
+      const handleMouseMove = (e: MouseEvent) => {
+        lastMouseX = e.clientX
+        lastMouseY = e.clientY
+
+        if (mouseAnimationFrameId === null) {
+          mouseAnimationFrameId = requestAnimationFrame(updateMouseProximity)
+        }
       }
 
       for (const panel of panels) {
         scrollOpacity.set(panel, 1)
         mouseProximityOpacity.set(panel, 1)
         panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+        panel.style.setProperty('--panel-caption-blur', '8px')
       }
 
       updateScrollOverlay()
@@ -179,6 +198,9 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
         if (animationFrameId !== null) {
           cancelAnimationFrame(animationFrameId)
         }
+        if (mouseAnimationFrameId !== null) {
+          cancelAnimationFrame(mouseAnimationFrameId)
+        }
         document.removeEventListener('scroll', scheduleScrollUpdate)
         window.removeEventListener('scroll', scheduleScrollUpdate)
         root.removeEventListener('scroll', scheduleScrollUpdate)
@@ -186,22 +208,68 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
         root.removeEventListener('mousemove', handleMouseMove)
       }
     } else {
-      // Desktop on homepage: Use hover to reveal/hide overlay
-      for (const panel of panels) {
-        // Default to full overlay (hidden content)
-        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+      // Desktop on homepage: Use mouse proximity to gradually fade overlay
+      const mouseProximityOpacity = new Map<HTMLElement, number>()
+      let animationFrameId: number | null = null
+      let lastMouseX = 0
+      let lastMouseY = 0
 
-        panel.addEventListener('mouseenter', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '0')
-        })
+      const updateMouseProximity = () => {
+        const mouseX = lastMouseX
+        const mouseY = lastMouseY
 
-        panel.addEventListener('mouseleave', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '1')
-        })
+        for (const panel of panels) {
+          const rect = panel.getBoundingClientRect()
+          const panelCenterX = rect.left + rect.width / 2
+          const panelCenterY = rect.top + rect.height / 2
+
+          const distance = Math.sqrt(
+            Math.pow(mouseX - panelCenterX, 2) + Math.pow(mouseY - panelCenterY, 2)
+          )
+
+          // Tight proximity fade based on cursor distance from tile center
+          // 0-75px: 0-50% opacity (cursor near/on tile)
+          // 75-200px: 50-100% opacity (cursor moving away)
+          // 200+px: 100% opacity (cursor far from tile)
+          let opacity = 1
+          if (distance < 75) {
+            opacity = (distance / 75) * 0.5
+          } else if (distance < 200) {
+            opacity = 0.5 + ((distance - 75) / 125) * 0.5
+          }
+
+          mouseProximityOpacity.set(panel, opacity)
+          const blurRadius = opacity * 8
+          panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
+          panel.style.setProperty('--panel-caption-blur', `${blurRadius}px`)
+        }
+        animationFrameId = null
       }
 
+      const handleMouseMove = (e: MouseEvent) => {
+        lastMouseX = e.clientX
+        lastMouseY = e.clientY
+
+        if (animationFrameId === null) {
+          animationFrameId = requestAnimationFrame(updateMouseProximity)
+        }
+      }
+
+      // Initialize all panels with full overlay
+      for (const panel of panels) {
+        mouseProximityOpacity.set(panel, 1)
+        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+        panel.style.setProperty('--panel-caption-blur', '8px')
+      }
+
+      // Listen to mouse movement
+      root.addEventListener('mousemove', handleMouseMove, { passive: true })
+
       return () => {
-        // Event listeners are automatically cleaned up when component unmounts
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        root.removeEventListener('mousemove', handleMouseMove)
       }
     }
   }, [rootRef])

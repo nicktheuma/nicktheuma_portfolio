@@ -26,6 +26,7 @@ type ImageItem = {
   title: string
   location: string | null
   src: string
+  thumbnail?: string
   monochrome?: boolean
 }
 
@@ -33,6 +34,7 @@ type VideoItem = {
   title: string
   location: string | null
   src: string
+  thumbnail?: string
   monochrome?: boolean
 }
 

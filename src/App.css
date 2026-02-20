@@ -362,12 +362,29 @@
   line-height: 0;
 }
 
+.project-thumb .media-card-video-wrapper,
+.project-thumb .media-card-image-wrapper {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: var(--home-grid-item-height, 220px);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .project-thumb img {
   display: block;
   width: 100%;
   height: var(--home-grid-item-height, 220px);
   object-fit: cover;
   background: var(--background-color);
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.project-thumb img[data-loaded="true"] {
+  opacity: 1;
 }
 
 .project-thumb video {
@@ -376,6 +393,12 @@
   height: var(--home-grid-item-height, 220px);
   object-fit: cover;
   background: transparent;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.project-thumb video[data-loaded="true"] {
+  opacity: 1;
 }
 
 .media-empty {
@@ -695,10 +718,12 @@
   background: var(--panel-background);
   opacity: var(--panel-caption-overlay-opacity, 1);
   mix-blend-mode: var(--overlay-blend-mode);
-  backdrop-filter: blur(calc(8px * var(--panel-caption-overlay-opacity, 1)));
+  backdrop-filter: blur(var(--panel-caption-blur, 8px));
   pointer-events: none;
   z-index: 0;
-  transition: opacity 300ms ease, backdrop-filter 300ms ease;
+  will-change: opacity, backdrop-filter;
+  transition: opacity 350ms cubic-bezier(0.4, 0, 0.2, 1), 
+              backdrop-filter 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-caption-panel="true"] .media-card-body.panel-caption > * {
@@ -845,6 +870,10 @@
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
+  opacity: 0;
+}
+
+.media-modal-content[data-loaded="true"] {
   animation: scaleIn 200ms ease;
 }
 
@@ -892,6 +921,7 @@
   border: none;
   background: none;
   cursor: pointer;
+  position: relative;
 }
 
 .media-card-image-button img,
@@ -900,4 +930,18 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.media-card-image-button img[data-loaded="true"],
+.media-card-video-button video[data-loaded="true"] {
+  opacity: 1;
+}
+
+.media-card-image-button,
+.media-card-video-button {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

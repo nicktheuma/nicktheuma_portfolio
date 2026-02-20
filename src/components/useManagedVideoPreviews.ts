@@ -2,6 +2,7 @@ import { useEffect, type RefObject } from 'react'
 
 type UseManagedVideoPreviewsOptions = {
   minVisibleRatio?: number
+  hoverMode?: 'play' | 'pause'
 }
 
 type VideoState = {
@@ -13,7 +14,7 @@ export function useManagedVideoPreviews(
   rootRef: RefObject<HTMLElement | null>,
   options: UseManagedVideoPreviewsOptions = {},
 ) {
-  const { minVisibleRatio = 0.01 } = options
+  const { minVisibleRatio = 0.01, hoverMode = 'pause' } = options
 
   useEffect(() => {
     const root = rootRef.current
@@ -124,10 +125,6 @@ export function useManagedVideoPreviews(
         }))
         .filter((item) => item.ratio >= minVisibleRatio)
         .sort((left, right) => {
-          if (!mobileViewport && right.hovered !== left.hovered) {
-            return Number(right.hovered) - Number(left.hovered)
-          }
-
           if (right.ratio !== left.ratio) {
             return right.ratio - left.ratio
           }
@@ -135,14 +132,24 @@ export function useManagedVideoPreviews(
           return right.area - left.area
         })
 
-      const hoveredVideo = ranked.find((item) => item.hovered)?.state.video
-      const activeVideo = mobileViewport ? ranked[0]?.state.video : hoveredVideo ?? ranked[0]?.state.video
-
       for (const state of videoStates) {
         const hovered = state.video.dataset.previewHover === 'true'
+        const visible = ranked.some((item) => item.state.video === state.video)
 
-        if (state.video === activeVideo) {
-          state.video.muted = !(hovered && !mobileViewport)
+        // Different hover modes:
+        // 'pause': play when visible, pause when hovered (homepage)
+        // 'play': play when visible, ignore hover (project page)
+        let shouldPlay: boolean
+        if (hoverMode === 'play') {
+          // Project page: play when visible, ignore hover
+          shouldPlay = visible
+        } else {
+          // Homepage: play when visible, pause on hover (desktop only)
+          shouldPlay = visible && (mobileViewport || !hovered)
+        }
+
+        if (shouldPlay) {
+          state.video.muted = true
           playVideo(state.video)
           setControlsState(state.video, false)
         } else {
@@ -235,5 +242,5 @@ export function useManagedVideoPreviews(
         video.playbackRate = Number(video.dataset.originalPlaybackRate ?? '1') || 1
       }
     }
-  }, [minVisibleRatio, rootRef])
+  }, [minVisibleRatio, hoverMode, rootRef])
 }
