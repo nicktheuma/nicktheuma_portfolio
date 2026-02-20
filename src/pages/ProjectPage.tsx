@@ -226,7 +226,6 @@ export function ProjectPage() {
     clearProjectTheme,
     getProjectMediaLayout,
     setProjectMediaLayout,
-    clearProjectMediaLayout,
   } = useSiteContent()
   const project = slug ? getProjectBySlug(slug) : undefined
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({})
@@ -830,11 +829,8 @@ export function ProjectPage() {
                       />
                     </div>
                   </div>
-                  <button type="button" className="admin-button" onClick={() => clearProjectMediaLayout(project.slug)}>
-                    Reset grid layout
-                  </button>
                   <button type="button" className="admin-button" onClick={resetToChronologicalLayout}>
-                    Reset to chronological order (small tiles)
+                    Reset grid layout (small tiles, chronological order)
                   </button>
                 </div>
               ),
