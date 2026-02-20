@@ -31,6 +31,8 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
 
     if (isTouch) {
       // Mobile: Scroll-based visibility - centered tile has no overlay
+      let animationFrameId: number | null = null
+
       const updateMobileOverlay = () => {
         const viewportHeight = window.innerHeight
         const viewportCenter = viewportHeight / 2
@@ -57,15 +59,30 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
         }
       }
 
+      const scheduleUpdate = () => {
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        animationFrameId = requestAnimationFrame(updateMobileOverlay)
+      }
+
       // Initial update
       updateMobileOverlay()
 
-      root.addEventListener('scroll', updateMobileOverlay, { passive: true })
-      window.addEventListener('resize', updateMobileOverlay, { passive: true })
+      // Use both scroll listeners - document and window
+      document.addEventListener('scroll', scheduleUpdate, { passive: true })
+      window.addEventListener('scroll', scheduleUpdate, { passive: true })
+      root.addEventListener('scroll', scheduleUpdate, { passive: true })
+      window.addEventListener('resize', scheduleUpdate, { passive: true })
 
       return () => {
-        root.removeEventListener('scroll', updateMobileOverlay)
-        window.removeEventListener('resize', updateMobileOverlay)
+        if (animationFrameId !== null) {
+          cancelAnimationFrame(animationFrameId)
+        }
+        document.removeEventListener('scroll', scheduleUpdate)
+        window.removeEventListener('scroll', scheduleUpdate)
+        root.removeEventListener('scroll', scheduleUpdate)
+        window.removeEventListener('resize', scheduleUpdate)
       }
     } else if (onProjectPage) {
       // Desktop on project page: Use IntersectionObserver for scroll visibility and mouse proximity
