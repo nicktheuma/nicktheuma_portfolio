@@ -239,6 +239,7 @@ export function ProjectPage() {
   const [editedTileKey, setEditedTileKey] = useState<string | null>(null)
   const [guideLines, setGuideLines] = useState<{ x: number[]; y: number[] }>({ x: [], y: [] })
   const [previewTileByKey, setPreviewTileByKey] = useState<Record<string, MediaTileSize>>({})
+  const [modalOpenedKey, setModalOpenedKey] = useState<string | null>(null)
   const resizeStartRef = useRef<{ key: string; tile: MediaTileSize; x: number; y: number } | null>(null)
   const editedTimerRef = useRef<number | null>(null)
   const projectTheme = getProjectTheme(slug ?? '')
@@ -864,14 +865,21 @@ export function ProjectPage() {
                   {!item.src || failedImages[imageKey] ? (
                     <div className="media-empty" aria-hidden="true" />
                   ) : (
-                    <img
-                      src={item.src}
-                      alt={item.title}
-                      loading="lazy"
-                      onError={() => {
-                        setFailedImages((previous) => ({ ...previous, [imageKey]: true }))
-                      }}
-                    />
+                    <button
+                      type="button"
+                      className="media-card-image-button"
+                      onClick={() => setModalOpenedKey(item.key)}
+                      aria-label={`View ${item.title}`}
+                    >
+                      <img
+                        src={item.src}
+                        alt={item.title}
+                        loading="lazy"
+                        onError={() => {
+                          setFailedImages((previous) => ({ ...previous, [imageKey]: true }))
+                        }}
+                      />
+                    </button>
                   )}
                   <div className="media-card-body panel-caption">
                     {!shouldHideTitle(item.title) && <h3>{item.title}</h3>}
@@ -971,18 +979,25 @@ export function ProjectPage() {
                   {failedVideos[videoKey] || !item.src ? (
                     <div className="media-empty" aria-hidden="true" />
                   ) : (
-                    <video
-                      className="video-timeline-only"
-                      src={item.src}
-                      data-preview-loop="true"
-                      data-interactive-controls="true"
-                      controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
-                      preload="metadata"
-                      loop
-                      onError={() => {
-                        setFailedVideos((previous) => ({ ...previous, [videoKey]: true }))
-                      }}
-                    />
+                    <button
+                      type="button"
+                      className="media-card-video-button"
+                      onClick={() => setModalOpenedKey(item.key)}
+                      aria-label={`View video ${item.title}`}
+                    >
+                      <video
+                        className="video-timeline-only"
+                        src={item.src}
+                        data-preview-loop="true"
+                        data-interactive-controls="true"
+                        controlsList="nodownload noplaybackrate nofullscreen noremoteplayback"
+                        preload="metadata"
+                        loop
+                        onError={() => {
+                          setFailedVideos((previous) => ({ ...previous, [videoKey]: true }))
+                        }}
+                      />
+                    </button>
                   )}
                   <div className="media-card-body panel-caption">
                     {!shouldHideTitle(item.title) && <h3>{item.title}</h3>}
@@ -1135,6 +1150,40 @@ export function ProjectPage() {
             )
           })}
         </div>
+      ) : null}
+
+      {modalOpenedKey ? (
+        (() => {
+          const modalItem = timelineItems.find((item) => item.key === modalOpenedKey)
+          if (!modalItem) return null
+
+          return (
+            <div className="media-modal-backdrop" onClick={() => setModalOpenedKey(null)}>
+              <div className="media-modal" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  className="media-modal-close"
+                  onClick={() => setModalOpenedKey(null)}
+                  aria-label="Close modal"
+                >
+                  ✕
+                </button>
+                {modalItem.type === 'image' && (
+                  <img src={modalItem.src} alt={modalItem.title} className="media-modal-content" />
+                )}
+                {modalItem.type === 'video' && (
+                  <video
+                    src={modalItem.src}
+                    className="media-modal-content"
+                    controls
+                    autoPlay
+                    controlsList="nodownload"
+                  />
+                )}
+              </div>
+            </div>
+          )
+        })()
       ) : null}
 
       <p>
