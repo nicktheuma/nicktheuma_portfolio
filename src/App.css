@@ -359,9 +359,11 @@
 
 .project-thumb a {
   display: block;
+  line-height: 0;
 }
 
 .project-thumb img {
+  display: block;
   width: 100%;
   height: var(--home-grid-item-height, 220px);
   object-fit: cover;
@@ -369,6 +371,7 @@
 }
 
 .project-thumb video {
+  display: block;
   width: 100%;
   height: var(--home-grid-item-height, 220px);
   object-fit: cover;
@@ -376,6 +379,7 @@
 }
 
 .media-empty {
+  display: block;
   width: 100%;
   height: var(--home-grid-item-height, 220px);
   background: transparent;
@@ -659,7 +663,7 @@
 }
 
 .media-card-body {
-  padding: 0 0.8rem 0.8rem 0.8rem;
+  padding: 0 0.8rem 0 0.8rem;
 }
 
 [data-caption-panel="true"] {
@@ -689,6 +693,7 @@
   position: absolute;
   inset: 0;
   background: var(--panel-background);
+  opacity: var(--panel-caption-overlay-opacity, 1);
   mix-blend-mode: var(--overlay-blend-mode);
   backdrop-filter: var(--overlay-effect-filter);
   pointer-events: none;
