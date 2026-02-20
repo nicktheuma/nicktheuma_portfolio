@@ -26,8 +26,6 @@ export function Layout() {
 
   // Triple-tap on brand name to toggle admin (works on mobile)
   const handleBrandClick = (event: React.MouseEvent) => {
-    event.preventDefault()
-    
     // Clear existing timer
     if (tapTimer) {
       window.clearTimeout(tapTimer)
@@ -36,7 +34,8 @@ export function Layout() {
     const newTapCount = tapCount + 1
 
     if (newTapCount === 3) {
-      // Triple tap detected - toggle admin
+      // Triple tap detected - prevent navigation and toggle admin
+      event.preventDefault()
       if (isAdmin) {
         lockAdmin()
       } else if (isUnlockOpen) {
@@ -50,6 +49,7 @@ export function Layout() {
       setTapCount(0)
       setTapTimer(null)
     } else {
+      // First or second tap - allow navigation but track taps
       setTapCount(newTapCount)
       // Reset tap count after 500ms
       const timer = window.setTimeout(() => {
