@@ -30,22 +30,42 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
     const onProjectPage = isProjectPage()
 
     if (isTouch) {
-      // Mobile: Use hover to reveal/hide overlay
-      for (const panel of panels) {
-        // Default to full overlay (hidden content)
-        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+      // Mobile: Scroll-based visibility - centered tile has no overlay
+      const updateMobileOverlay = () => {
+        const viewportHeight = window.innerHeight
+        const viewportCenter = viewportHeight / 2
 
-        panel.addEventListener('mouseenter', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '0')
-        })
+        for (const panel of panels) {
+          const rect = panel.getBoundingClientRect()
+          const panelCenter = rect.top + rect.height / 2
+          const distance = Math.abs(panelCenter - viewportCenter)
+          
+          // Calculate opacity based on distance from viewport center
+          // 0px distance (focused tile) = 0 opacity
+          // ~300px distance (adjacent tiles) = 0.5 opacity
+          // >500px distance (far tiles) = 1.0 opacity
+          let opacity = 0
+          if (distance < 100) {
+            opacity = (distance / 100) * 0.5
+          } else if (distance < 400) {
+            opacity = 0.5 + ((distance - 100) / 300) * 0.5
+          } else {
+            opacity = 1.0
+          }
 
-        panel.addEventListener('mouseleave', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '1')
-        })
+          panel.style.setProperty('--panel-caption-overlay-opacity', opacity.toString())
+        }
       }
 
+      // Initial update
+      updateMobileOverlay()
+
+      root.addEventListener('scroll', updateMobileOverlay, { passive: true })
+      window.addEventListener('resize', updateMobileOverlay, { passive: true })
+
       return () => {
-        // Event listeners are automatically cleaned up when component unmounts
+        root.removeEventListener('scroll', updateMobileOverlay)
+        window.removeEventListener('resize', updateMobileOverlay)
       }
     } else if (onProjectPage) {
       // Desktop on project page: Use IntersectionObserver for scroll visibility and mouse proximity
