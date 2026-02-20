@@ -698,6 +698,7 @@
   backdrop-filter: var(--overlay-effect-filter);
   pointer-events: none;
   z-index: 0;
+  transition: opacity 300ms ease;
 }
 
 [data-caption-panel="true"] .media-card-body.panel-caption > * {

@@ -24,7 +24,25 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
     const isTouch = isTouchDevice()
 
     if (isTouch) {
-      // Mobile: Use IntersectionObserver for visibility-based overlay
+      // Mobile: Use hover to reveal/hide overlay
+      for (const panel of panels) {
+        // Default to full overlay (hidden content)
+        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+
+        panel.addEventListener('mouseenter', () => {
+          panel.style.setProperty('--panel-caption-overlay-opacity', '0')
+        })
+
+        panel.addEventListener('mouseleave', () => {
+          panel.style.setProperty('--panel-caption-overlay-opacity', '1')
+        })
+      }
+
+      return () => {
+        // Event listeners are automatically cleaned up when component unmounts
+      }
+    } else {
+      // Desktop: Use IntersectionObserver for visibility-based overlay with fade
       const observer = new IntersectionObserver(
         (entries) => {
           for (const entry of entries) {
@@ -49,24 +67,6 @@ export function usePanelCaptionVisibility(rootRef: RefObject<HTMLElement | null>
 
       return () => {
         observer.disconnect()
-      }
-    } else {
-      // Desktop: Use hover to reveal/hide overlay
-      for (const panel of panels) {
-        // Default to full overlay (hidden content)
-        panel.style.setProperty('--panel-caption-overlay-opacity', '1')
-
-        panel.addEventListener('mouseenter', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '0')
-        })
-
-        panel.addEventListener('mouseleave', () => {
-          panel.style.setProperty('--panel-caption-overlay-opacity', '1')
-        })
-      }
-
-      return () => {
-        // Event listeners are automatically cleaned up when component unmounts
       }
     }
   }, [rootRef])
