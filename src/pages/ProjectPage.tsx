@@ -695,6 +695,12 @@ export function ProjectPage() {
                       value={projectTheme.panelBackground}
                       onChange={(value) => updateProjectTheme(project.slug, { panelBackground: value })}
                     />
+                    <AdminColorField
+                      id="project-theme-panel-text"
+                      label="Panel text color"
+                      value={projectTheme.panelTextColor}
+                      onChange={(value) => updateProjectTheme(project.slug, { panelTextColor: value })}
+                    />
                     <div>
                       <label className="search-label" htmlFor="project-theme-overlay-blend-mode">
                         Overlay blend mode
